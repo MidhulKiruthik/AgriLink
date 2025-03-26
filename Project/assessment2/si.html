@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 400px; margin: auto; }
+        input, button { margin: 10px 0; display: block; width: 100%; padding: 8px; }
+        .result { font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Simple & Compound Interest Calculator</h2>
+        <input type="number" id="principal" placeholder="Initial Investment">
+        <input type="number" id="rate" placeholder="Interest Rate (in %)">
+        <input type="number" id="years" placeholder="Years">
+        <button onclick="calculateInterest()">Calculate</button>
+        <p class="result" id="interestResult"></p>
+    </div>
+    
+    <script>
+        function calculateInterest() {
+            let p = parseFloat(document.getElementById('principal').value);
+            let r = parseFloat(document.getElementById('rate').value) / 100;
+            let t = parseFloat(document.getElementById('years').value);
+            
+            let simpleInterest = p * r * t;
+            let compoundInterest = p * (Math.pow((1 + r), t) - 1);
+            
+            document.getElementById('interestResult').innerText = `Simple Interest: ${simpleInterest.toFixed(2)}, Compound Interest: ${compoundInterest.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>

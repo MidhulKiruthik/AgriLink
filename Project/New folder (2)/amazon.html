@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Bestsellers</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+margin: 0;
+padding: 0;
+background-color: #f7f7f7;
+}
+header {
+background-color: #232f3e;
+padding: 10px 20px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+color: white;
+}
+header img {
+height: 30px;
+}
+header .search-bar {
+display: flex;
+align-items: center;
+width: 50%;
+}
+header .search-bar select {
+padding: 5px;
+margin-right: 5px;
+border: none;
+border-radius: 4px;
+}
+header .search-bar input {
+flex-grow: 1;
+padding: 5px;
+border-radius: 4px;
+border: none;
+}
+header .search-bar select, header .search-bar input {
+background-color: #f3f3f3;
+color: #333;
+}
+header .language-dropdown {
+margin-left: 10px;
+padding: 5px;
+border: none;
+border-radius: 4px;
+background-color: #f3f3f3;
+color: #333;
+}
+header .account {
+display: flex;
+align-items: center;
+}
+nav {
+background-color: #232f3e;
+padding: 10px 20px;
+display: flex;
+color: white;
+font-size: 0.9em;
+}
+nav a {
+color: white;
+text-decoration: none;
+margin-right: 20px;
+}
+.content {
+display: flex;
+}
+.sidebar {
+width: 20%;
+background-color: white;
+padding: 20px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.sidebar h3 {
+font-size: 1.2em;
+margin-bottom: 10px;
+}
+.sidebar ul {
+list-style: none;
+padding: 0;
+}
+.sidebar ul li {
+margin-bottom: 10px;
+}
+.main-content {
+width: 80%;
+padding: 20px;
+}
+.title {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+}
+.title h2 {
+font-size: 1.5em;
+}
+.title a {
+color: #0073e6;
+text-decoration: none;
+font-size: 0.9em;
+}
+.bestsellers {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 20px;
+}
+.product {
+background-color: white;
+padding: 15px;
+border-radius: 8px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+text-align: center;
+}
+.product img {
+width: 100%;
+max-height: 150px;
+object-fit: contain;
+margin-bottom: 10px;
+}
+.product h3 {
+font-size: 1em;
+margin: 10px 0;
+}
+.product h3 a {
+text-decoration: none;
+color: #0073e6;
+}
+.product h3 a:hover {
+text-decoration: underline;
+}
+.product .rating {
+color: #ff9900;
+}
+.product .price {
+color: #b12704;
+font-size: 1.1em;
+margin: 10px 0;
+}
+</style>
+</head>
+<body>
+<header>
+<img src="https://www.hatchwise.com/wp-content/uploads/2022/08/Amazon-Logo-2000-present-1024x576.jpeg" alt="Amazon Logo">
+<div class="search-bar">
+<select>
+<option>All</option>
+</select>
+<input type="text" placeholder="Search Amazon.in">
+<select class="language-dropdown">
+<option>EN</option>
+<option>HI</option>
+<option>ES</option>
+</select>
+</div>
+<div class="account">
+<span>Hello, sign in</span>
+</div>
+</header>
+<nav>
+<a href="#">All</a>
+<a href="#">Electronics</a>
+<a href="#">Best Sellers</a>
+<a href="#">Mobiles</a>
+<a href="#">Today's Deals</a>
+</nav>
+<div class="content">
+<div class="sidebar">
+<h3>Any Department</h3>
+<ul>
+<li>Books</li>
+<li>Computers & Accessories</li>
+<li>Electronics</li>
+<li>Mobiles</li>
+<li>Laptops</li>
+<li>Accessories</li>
+</ul>
+</div>
+<div class="main-content">
+<div class="title">
+<h2>Amazon Bestsellers</h2>
+<a href="#">See more</a>
+</div>
+<div class="bestsellers">
+<div class="product">
+<img
+src="https://rukminim2.flixcart.com/image/850/1000/xif0q/mobile/m/x/d/narzo-70x-5g-rmx3998-realme-original-imahyfd6gkbabuuh.jpeg?q=90&crop=false"
+alt="Realme Narzo 70x">
+<h3><a href="https://www.amazon.in/realme-Storage-Display-Dimensity-Charger/dp/B0D3WXQN8N/ref=sr_1_3?crid=36F6ORBC0MCJL&dib=eyJ2IjoiMSJ9.CfYHDnHm_
+LIhxov6FP7f-kivda2BfY-zOcLSzY_P0BXXy1ztgOqWv8jG1oQB-2hj7guJQ_MX0Cs9WvxYOtiLsqlkOSxEd00eLt-gSbddyNuwkgJhO5gD-dzxarLuZkJGgs7eOquuIM13U5aWmCI_eWBc22Ue6tcwojG1Xfvx2upWFbzv_84bWcBYS2rmS79ngv8
+hEU71CGtbyVBflCu58FPPzeRHtGdFOU-0SRoyeCs.MqUNZZR9aVH6RvKW_mtsK-
+oUkSaRLo3ko4DnkWTOC3U&dib_tag=se&keywords=realme+NARZO+70x+5G&nsdOptOutParam=t
+rue&qid=1737295205&sprefix=%2Caps%2C234&sr=8-3"
+target="_blank">realme NARZO 70x 5G</a></h3>
+<div class="rating">★★★★☆</div>
+<div class="price">₹10,749.00</div>
+</div>
+<div class="product">
+<img src="https://m.media-amazon.com/images/I/61+SW9nDTEL.jpg" alt="Boat Rockerz">
+<h3><a href="https://www.amazon.in/boAt-Rockerz-255-Pro-Earphones/dp/B08TV2P1N8/ref=sr_1_1_sspa?crid=3B9SFTCT7B5IU&dib=eyJ2IjoiMSJ9.1I
+Bq_3Gr6qEvuB9TkpEkcv5l--9cS3zeMhV-FVm8hZtVQ2UFXGxd4kq_LhLtXSfhfFLwa4Ipr4kDcg5UxPOzgPgAktjpPTB0Xsw_Eg7mEbIZtt_MyM
+R0fjvZS-zzILa5OuchrTl4s1BoN-4ZeyT42PkV4XBkIHmqpcRW0YGoUBFAapTacnWDSNOVyeKhbYssK4R2ERr2J7tH6phSsQqsRZdgrl-XEVkB9DjXqJcwicQ.bAt4abJchiFqDB4tmMiALVmC1fHZu7Pe112WqR00Los&dib_tag=se&keywor
+ds=boat+rockerz+255+pro%2B&nsdOptOutParam=true&qid=1737295353&sprefix=boat+roc
+kers+255+pro%2Caps%2C267&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1"
+target="_blank">boAt Rockerz 255 Pro+</a></h3>
+<div class="rating">★★★★☆</div>
+<div class="price">₹999.00</div>
+</div>
+<div class="product">
+<img src="https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/MU862?wid=2000&hei=2000&fmt=jpeg&qlt=90&.v=1591824860000"
+alt="Apple Adapter">
+<h3><a href="https://www.amazon.in/Original-Charger-Cable-iPhone-Promax/dp/B0CQK6JDK5/ref=sr_1_1_sspa?crid=2FVZSRVCVT19S&dib=eyJ2IjoiMSJ9.ZED2G
+NXbdynxZEhbesBvG4itapYkFsgroLGbMZue2LOBr-kHgIJiuJ_CvM76xiWSkJqjhPwu088FkP70kBgjYoO5Met3tBO1bYcfmoclwGZs1rjOaW3fQHYVxnhV
+iM9PK4tInI1dQT2k3fDlMBLNX1X2_abPSEb2tmQ8hzKDHcN9brhFEPb4hwIDYwxwJQhGYzuK97w5Xp
+Kw1AcHh0Lo7KjfQ7e_LONH0hxB-AMxI68.9dPmis5tWbE_tzosOR7AEuNPT5ANqgLHxMFywqMLUYo&dib_tag=se&keywords=apple+2
+0w+type+c+fast+charger&nsdOptOutParam=true&qid=1737295412&sprefix=apple+20W+ty
+p%2Caps%2C271&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1"
+target="_blank">Apple 20W USB-C Power Adapter</a></h3>
+<div class="rating">★★★☆☆</div>
+<div class="price">₹1,549.00</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

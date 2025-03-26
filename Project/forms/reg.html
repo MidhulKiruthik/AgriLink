@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Registration</title>
+</head>
+<body style="background-color: coral; font-family: Arial, sans-serif;">
+    <h1 align="center">Forms</h1>
+    <table align="center">
+        <tbody style="color: white;">
+            <form action="profile.html" method="post">
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="fName">FIRST NAME:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="text" id="fName" name="fName" maxlength="30"> (max 30 characters a-z and A-Z)
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="lName">LAST NAME:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="text" id="lName" name="lName" maxlength="30"> (max 30 characters a-z and A-Z)
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align:left; padding: 10px;"><label for="dob">DATE OF BIRTH:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="date" id="dob" name="dob">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="Email">EMAIL ID:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="email" id="Email" name="Email">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="number">MOBILE NUMBER:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="tel" id="number" name="number" maxlength="10"> (10 digit number)
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="gender">GENDER:</label></td>
+                    <td style="padding: 10px;">
+                        Male <input type="radio" id="genderMale" name="gender"> 
+                        Female <input type="radio" id="genderFemale" name="gender">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="address">ADDRESS:</label></td>
+                    <td style="padding: 10px;">
+                        <textarea id="address" name="address" cols="35" rows="5"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="city">CITY:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="text" id="city" name="city" maxlength="30"> (max 30 characters a-z and A-Z)
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="pincode">PINCODE:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="text" id="pincode" name="pincode" maxlength="6" width="30px"> (6 digit number)
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="state">STATE:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="text" name="state" id="state" maxlength="30"> (max 30 characters a-z and A-Z)
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align:left; padding: 10px;"><label for="country">COUNTRY:</label></td>
+                    <td style="padding: 10px;">
+                        <input type="text" id="country" name="country" value="India" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; padding: 10px;"><label for="hobbies">HOBBIES:</label></td>
+                    <td style="padding: 10px;">
+                        <label for="drawing">Drawing</label>
+                        <input type="checkbox" id="drawing" name="hobbies" value="Drawing">
+                        <label for="singing">Singing</label>
+                        <input type="checkbox" id="singing" name="hobbies" value="Singing">
+                        <label for="dancing">Dancing</label>
+                        <input type="checkbox" id="dancing" name="hobbies" value="Dancing">
+                        <label for="sketching">Sketching</label>
+                        <input type="checkbox" id="sketching" name="hobbies" value="Sketching">
+                        <br>
+                        <label for="otherHobby">Others</label>
+                        <input type="checkbox" id="otherHobby" name="hobbies" value="Others">
+                        <input type="text" name="otherHobbyText" id="otherHobbyText" placeholder="Specify other hobbies">
+                    </td>
+                </tr>
+                <tr>
+                    <td style=" padding: 10px;"><label for="qualify">QUALIFICATION:</label></td>
+                    <td>
+                        <table>
+                            <tr>
+                                <th>SI.No</th>
+                                <th>Examination</th>
+                                <th>Board</th>
+                                <th>Percentage</th>
+                                <th>Year of Passing</th>
+                            </tr>
+                            <tr>
+                                <th>1</th>
+                                <th align="left">Class X</th>
+                                <th><input type="text" id="boardX" name="boardX"></th>
+                                <th><input type="text" id="percentageX" name="percentageX"></th>
+                                <th><input type="text" id="yearX" name="yearX"></th>
+                            </tr>
+                            <tr>
+                                <th>2</th>
+                                <th align="left">Class XII</th>
+                                <th><input type="text" id="boardXII" name="boardXII"></th>
+                                <th><input type="text" id="percentageXII" name="percentageXII"></th>
+                                <th><input type="text" id="yearXII" name="yearXII"></th>
+                            </tr>
+                            <tr>
+                                <th>3</th>
+                                <th align="left">Graduation</th>
+                                <th><input type="text" id="boardGrad" name="boardGrad"></th>
+                                <th><input type="text" id="percentageGrad" name="percentageGrad"></th>
+                                <th><input type="text" id="yearGrad" name="yearGrad"></th>
+                            </tr>
+                            <tr>
+                                <th>4</th>
+                                <th align="left">Masters</th>
+                                <th><input type="text" id="boardMasters" name="boardMasters"></th>
+                                <th><input type="text" id="percentageMasters" name="percentageMasters"></th>
+                                <th><input type="text" id="yearMasters" name="yearMasters"></th>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style=" padding: 10px;"><label for="course">COURSES <br>APPLIED FOR:</label></td>
+                    <td style="padding: 10px;">
+                        BCA <input type="radio" id="courseBCA" name="course">
+                        B.Com <input type="radio" id="courseBCom" name="course">
+                        B.Sc <input type="radio" id="courseBSc" name="course">
+                        B.A <input type="radio" id="courseBA" name="course">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">
+                        <input type="submit" value="Submit">
+                        <input type="reset" value="Reset">
+                    </td>
+                </tr>
+            </form>
+        </tbody>
+    </table>
+</body>
+</html>

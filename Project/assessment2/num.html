@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Analyzer</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 400px; margin: auto; }
+        input, select, button { margin: 10px 0; display: block; width: 100%; padding: 8px; }
+        .result { font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Number Analyzer</h2>
+        <input type="number" id="numberInput" placeholder="Enter a positive integer">
+        <select id="operation">
+            <option value="isPrime">Check Prime</option>
+            <option value="isArmstrong">Check Armstrong</option>
+            <option value="isPalindrome">Check Palindrome</option>
+            <option value="smallestEvenDigit">Smallest Even Digit</option>
+            <option value="highestOddDigit">Highest Odd Digit</option>
+            <option value="isStrong">Check Strong Number</option>
+        </select>
+        <button onclick="analyzeNumber()">Analyze</button>
+        <p class="result" id="result"></p>
+    </div>
+    <script>
+        function analyzeNumber() {
+            var num = parseInt(document.getElementById('numberInput').value);
+            var operation = document.getElementById('operation').value;
+            var resultText = '';
+
+            switch(operation) {
+                case 'isPrime':
+                    resultText = isPrime(num) ? num + ' is a prime number.' : num + ' is not a prime number.';
+                    break;
+                case 'isArmstrong':
+                    resultText = isArmstrong(num) ? num + ' is an Armstrong number.' : num + ' is not an Armstrong number.';
+                    break;
+                case 'isPalindrome':
+                    resultText = isPalindrome(num) ? num + ' is a palindrome.' : num + ' is not a palindrome.';
+                    break;
+                case 'smallestEvenDigit':
+                    var smallestEven = smallestEvenDigit(num);
+                    resultText = smallestEven !== null ? 'Smallest even digit is ' + smallestEven + '.' : 'No even digits found.';
+                    break;
+                case 'highestOddDigit':
+                    var highestOdd = highestOddDigit(num);
+                    resultText = highestOdd !== null ? 'Highest odd digit is ' + highestOdd + '.' : 'No odd digits found.';
+                    break;
+                case 'isStrong':
+                    resultText = isStrong(num) ? num + ' is a strong number.' : num + ' is not a strong number.';
+                    break;
+                default:
+                    resultText = 'Invalid operation selected.';
+            }
+
+            document.getElementById('result').innerText = resultText;
+        }
+
+        function isPrime(n) {
+            if (n <= 1) return false;
+            for (var i = 2; i <= Math.sqrt(n); i++) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+
+        function isArmstrong(n) {
+            var sum = 0;
+            var temp = n;
+            var digits = n.toString().length;
+            while (temp > 0) {
+                var remainder = temp % 10;
+                sum += Math.pow(remainder, digits);
+                temp = Math.floor(temp / 10);
+            }
+            return sum === n;
+        }
+
+        function isPalindrome(n) {
+            var str = n.toString();
+            var reversedStr = str.split('').reverse().join('');
+            return str === reversedStr;
+        }
+
+        function smallestEvenDigit(n) {
+            var digits = n.toString().split('');
+            var evenDigits = digits.filter(function(digit) {
+                return parseInt(digit) % 2 === 0;
+            });
+            if (evenDigits.length === 0) return null;
+            return Math.min.apply(null, evenDigits.map(Number));
+        }
+
+        function highestOddDigit(n) {
+            var digits = n.toString().split('');
+            var oddDigits = digits.filter(function(digit) {
+                return parseInt(digit) % 2 !== 0;
+            });
+            if (oddDigits.length === 0) return null;
+            return Math.max.apply(null, oddDigits.map(Number));
+        }
+
+        function isStrong(n) {
+            var sum = 0;
+            var temp = n;
+            while (temp > 0) {
+                var remainder = temp % 10;
+                sum += factorial(remainder);
+                temp = Math.floor(temp / 10);
+            }
+            return sum === n;
+        }
+
+        function factorial(x) {
+            if (x === 0 || x === 1) return 1;
+            var fact = 1;
+            for (var i = 2; i <= x; i++) {
+                fact *= i;
+            }
+            return fact;
+        }
+    </script>
+</body>
+</html>
