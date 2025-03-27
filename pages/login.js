@@ -14,22 +14,90 @@ export default function Login() {
 
     try {
       const res = await axios.post("http://localhost:5000/login", { email, password });
-      localStorage.setItem("token", res.data.token); // Store token in localStorage
+      localStorage.setItem("token", res.data.token); // Store token
       router.push("/products"); // Redirect to products page
     } catch (err) {
-      setError("Invalid credentials!"); // Show error message
+      setError("Invalid email or password!"); // Show error message
     }
   };
 
   return (
-    <div className="container">
-      <h2>Login</h2>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">Login</button>
+    <div style={styles.container}>
+      <h2 style={styles.heading}>Login</h2>
+
+      {error && <p style={styles.error}>{error}</p>}
+
+      <form onSubmit={handleLogin} style={styles.form}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={styles.input}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={styles.input}
+        />
+        <button type="submit" style={styles.button}>Login</button>
       </form>
+
+      <p style={styles.registerText}>
+        Don't have an account? <a href="/signup" style={styles.link}>Sign Up</a>
+      </p>
     </div>
   );
 }
+
+// 🔹 Inline CSS Styling
+const styles = {
+  container: {
+    maxWidth: "400px",
+    margin: "50px auto",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 0 15px rgba(0, 0, 0, 0.2)",
+    textAlign: "center",
+    backgroundColor: "#fff",
+  },
+  heading: {
+    fontSize: "24px",
+    marginBottom: "15px",
+  },
+  error: {
+    color: "red",
+    marginBottom: "10px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+  input: {
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    fontSize: "16px",
+  },
+  button: {
+    padding: "10px",
+    backgroundColor: "#28a745",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "16px",
+    cursor: "pointer",
+  },
+  registerText: {
+    marginTop: "10px",
+  },
+  link: {
+    color: "#007bff",
+    textDecoration: "none",
+  },
+};
