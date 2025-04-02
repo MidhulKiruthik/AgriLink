@@ -66,38 +66,44 @@ app.post("/signup", async (req, res) => {
         );
     });
 });
-
 // ✅ User Login
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
-
+  
     if (!email || !password) {
-        return res.status(400).json({ message: "Email and Password are required!" });
+      return res.status(400).json({ message: "Email and Password are required!" });
     }
-
+  
     db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
-        if (err) return res.status(500).json({ error: err });
-        if (results.length === 0) {
-            return res.status(400).json({ message: "User not found!" });
-        }
+      if (err) return res.status(500).json({ error: err });
+      if (results.length === 0) {
+        return res.status(400).json({ message: "User not found!" });
+      }
+  
+      const user = results[0];
+  
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid credentials!" });
+      }
+  
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        SECRET_KEY,
+        { expiresIn: "24h" }
+      );
+      //localStorage.setItem("token", response.data.token);
 
-        const user = results[0];
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credentials!" });
-        }
-
-        const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
-            SECRET_KEY,
-            { expiresIn: "24h" }
-        );
-
-        res.json({ message: "Login successful!", token });
+      // Send token and farmer_id (or user.id) along with the login success message
+      res.json({
+        message: "Login successful!",
+        token,
+        farmer_id: user.farmer_id, // Send farmer_id (or user.id) if relevant
+        role: user.role, // Optionally include user role if required
+      });
     });
-});
-
+  });
+  
 // ✅ Middleware to Verify JWT Token
 const authenticateToken = (req, res, next) => {
     const token = req.header("Authorization");
@@ -148,29 +154,49 @@ app.get("/orders", authenticateToken, (req, res) => {
         });
     });
 });
+const multer = require("multer");
+const path = require("path");
 
+// Configure multer for file storage
+const storage = multer.diskStorage({
+    destination: "uploads/", // Images will be saved in 'uploads' folder
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    },
+});
+const upload = multer({ storage });
+app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
+    console.log("Incoming request:", req.body);
+    console.log("Uploaded file:", req.file);
+    console.log("User Role:", req.user.role);
 
-// ✅ Add Product (Admin Only)
-app.post("/products", authenticateToken, (req, res) => {
-    if (req.user.role !== "admin") {
-        return res.status(403).json({ message: "Access denied! Admin only." });
+    if (req.user.role !== "admin" && req.user.role !== "farmer") {
+        return res.status(403).json({ message: "Access denied! Admin or Farmer only." });
     }
 
-    const { farmer_id, name, description, price, quantity, category, image_url } = req.body;
+    const { farmer_id, name, description, price, quantity, category } = req.body;
+    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
-    if (!farmer_id || !name || !price || !quantity) {
-        return res.status(400).json({ message: "Farmer ID, name, price, and quantity are required!" });
+    if (!name || !price || !quantity) {
+        return res.status(400).json({ message: "Name, price, and quantity are required!" });
     }
 
     db.query(
         "INSERT INTO products (farmer_id, name, description, price, quantity, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [farmer_id, name, description, price, quantity, category, image_url],
+        [farmer_id || null, name, description, price, quantity, category, image_url],
         (err, result) => {
-            if (err) return res.status(500).json({ error: err });
-            res.status(201).json({ message: "Product added successfully!" });
+            if (err) {
+                console.error("Database Error:", err);
+                return res.status(500).json({ error: err });
+            }
+            res.status(201).json({ message: "Product added successfully!", image_url });
         }
     );
 });
+
+
+// ✅ Serve uploaded images
+app.use("/uploads", express.static("uploads"));
 
 // ✅ Get All Products
 app.get("/products", (req, res) => {
@@ -263,6 +289,29 @@ app.get("/cart", authenticateToken, (req, res) => {
         }
     );
 });
+app.put("/cart/:id", authenticateToken, (req, res) => {
+    const user_id = req.user.id;
+    const { id } = req.params;
+    const { quantity } = req.body; // Get the new quantity from the request body
+  
+    if (quantity <= 0) {
+      return res.status(400).json({ message: "Quantity must be greater than zero." });
+    }
+  
+    // Update the quantity of the item in the cart
+    db.query(
+      "UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?",
+      [quantity, id, user_id],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: err });
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ message: "Item not found in cart!" });
+        }
+        res.json({ message: "Cart item quantity updated successfully!" });
+      }
+    );
+  });
+  
 app.delete("/cart/:id", authenticateToken, (req, res) => {
     const user_id = req.user.id;
     const { id } = req.params;
@@ -335,50 +384,31 @@ app.post("/create-order", authenticateToken, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-});
-app.put("/orders/:id/status", authenticateToken, (req, res) => {
-    if (req.user.role !== "farmer" && req.user.role !== "admin") {
-        return res.status(403).json({ message: "Access denied! Only Farmers/Admin can update status." });
-    }
-
-    const { id } = req.params;
-    const { status } = req.body;
-
-    if (!["Pending", "Shipped", "Delivered"].includes(status)) {
-        return res.status(400).json({ message: "Invalid status!" });
-    }
-
-    db.query(
-        "UPDATE orders SET status = ? WHERE id = ?",
-        [status, id],
-        (err, result) => {
-            if (err) return res.status(500).json({ error: err });
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ message: "Order not found!" });
-            }
-            res.json({ message: `Order status updated to ${status}!` });
-        }
-    );
-});
-app.get("/orders", authenticateToken, (req, res) => {
+});app.put("/order/:orderId/status", authenticateToken, (req, res) => {
+    const { orderId } = req.params;
+    const { status } = req.body; // Assume the new status is sent in the request body
     const user_id = req.user.id;
-    db.query("SELECT * FROM orders WHERE user_id = ?", [user_id], (err, results) => {
-        if (err) return res.status(500).json({ error: err });
-        res.json(results);
-    });
-});
-app.get("/orders", authenticateToken, (req, res) => {
-    const user_id = req.user.id;
-
+  
+    // Validate that the status is one of the allowed values (for example: "Pending", "Shipped", "Delivered")
+    const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value!" });
+    }
+  
+    // Update the order status in the database
     db.query(
-        "SELECT o.id, o.total_price, o.status, o.created_at, GROUP_CONCAT(p.name SEPARATOR ', ') AS products FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id WHERE o.user_id = ? GROUP BY o.id",
-        [user_id],
-        (err, results) => {
-            if (err) return res.status(500).json({ error: err });
-            res.json(results);
+      "UPDATE orders SET status = ? WHERE id = ? AND user_id = ?",
+      [status, orderId, user_id],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: "Database error!" });
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ message: "Order not found or not authorized!" });
         }
+        return res.status(200).json({ message: `Order status updated to ${status}.` });
+      }
     );
-});
+  });
+  
 app.get("/admin/orders", authenticateToken, (req, res) => {
     if (req.user.role !== "admin") {
         return res.status(403).json({ message: "Access denied! Admin only." });
@@ -451,30 +481,8 @@ app.delete("/wishlist/:id", authenticateToken, (req, res) => {
             res.json({ message: "Removed from wishlist!" });
         }
     );
-});app.get("/products/search", (req, res) => {
-    const { query } = req.query;
-
-    if (!query) {
-        return res.status(400).json({ message: "Query parameter is required!" });
-    }
-
-    // SQL query to search products by name
-    let sql = "SELECT * FROM products WHERE name LIKE ?";
-    let params = [`%${query}%`];
-
-    // Execute the query
-    db.query(sql, params, (err, results) => {
-        if (err) return res.status(500).json({ error: err });
-
-        // If no products are found
-        if (results.length === 0) {
-            return res.status(404).json({ message: "Product not found!" });
-        }
-
-        // Send results as response
-        res.json(results);
-    });
 });
+
 app.get("/profile", authenticateToken, (req, res) => {
     const user_id = req.user.id;
 
@@ -487,4 +495,69 @@ app.get("/profile", authenticateToken, (req, res) => {
 
         res.json({ message: "Profile accessed successfully!", user: results[0] });
     });
+});const PDFDocument = require("pdfkit");
+const fs = require("fs");
+
+const invoiceDir = "invoices";
+if (!fs.existsSync(invoiceDir)) {
+  fs.mkdirSync(invoiceDir);  // Create the directory if it doesn't exist
+}
+
+app.get("/invoice/:orderId", authenticateToken, (req, res) => {
+  const { orderId } = req.params;
+  const user_id = req.user.id;
+
+  // Fetch order details from database
+  db.query(
+    "SELECT o.id, o.total_price, o.status, o.created_at, GROUP_CONCAT(p.name SEPARATOR ', ') AS products FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id WHERE o.user_id = ? AND o.id = ? GROUP BY o.id",
+    [user_id, orderId],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: "Database error!" });
+      if (results.length === 0) return res.status(404).json({ message: "Order not found!" });
+
+      const order = results[0];
+
+      // Create PDF Invoice
+      const doc = new PDFDocument();
+      const filePath = `${invoiceDir}/order_${order.id}.pdf`;
+      const stream = fs.createWriteStream(filePath);
+      doc.pipe(stream);
+
+      doc.fontSize(20).text("Invoice", { align: "center" });
+      doc.moveDown();
+      doc.fontSize(14).text(`Order ID: ${order.id}`);
+      doc.text(`Total Price: ₹${order.total_price}`);
+      doc.text(`Status: ${order.status}`);
+      doc.text(`Ordered On: ${new Date(order.created_at).toLocaleString()}`);
+      doc.moveDown();
+      doc.text(`Products: ${order.products}`);
+      doc.end();
+
+      // Send File Once Ready
+      stream.on("finish", () => {
+        res.download(filePath, `Invoice_Order_${order.id}.pdf`, (err) => {
+          if (err) {
+            console.error("Error sending the file:", err);
+            return res.status(500).json({ error: "Failed to send the invoice!" });
+          }
+        });
+      });
+
+      // Handle errors in creating the PDF
+      stream.on("error", (err) => {
+        console.error("Error creating PDF:", err);
+        res.status(500).json({ error: "Failed to create the invoice!" });
+      });
+    }
+  );
+});app.get("/search", (req, res) => {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: "Search query is required!" });
+
+    db.query("SELECT * FROM products WHERE name LIKE ?", [`%${q}%`], (err, results) => {
+        if (err) return res.status(500).json({ error: "Database error!" });
+        res.json(results);
+    });
 });
+
+  

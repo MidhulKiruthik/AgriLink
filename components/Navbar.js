@@ -7,6 +7,7 @@ export default function Navbar() {
       <Link href="/products">Products</Link>
       <Link href="/cart">Cart</Link>
       <Link href="/login">Login</Link> {/* Add this */}
+
     </nav>
   );
 }

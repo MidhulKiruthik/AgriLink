@@ -14,7 +14,11 @@ export default function Login() {
 
     try {
       const res = await axios.post("http://localhost:5000/login", { email, password });
+
+      // Store token and farmer_id in localStorage
       localStorage.setItem("token", res.data.token); // Store token
+      localStorage.setItem("farmer_id", res.data.farmer_id); // Store farmer_id
+
       router.push("/products"); // Redirect to products page
     } catch (err) {
       setError("Invalid email or password!"); // Show error message

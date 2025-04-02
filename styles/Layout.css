@@ -1,13 +1,19 @@
+/* Overall Layout Styles */
 .layout-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  .content {
-    flex-grow: 1;
-    width: 90%;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f4f4f4;
+}
+
+/* Main Content Styles */
+.content {
+  flex-grow: 1; /* Ensures content area grows to take available space */
+  background: #f9f9f9;
+  padding: 20px;
+}
+
+/* Optional: Apply background gradient to the content area */
+.content {
+  background: linear-gradient(135deg, #e1e1e1, #ffffff);
+}

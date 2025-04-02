@@ -1,70 +1,72 @@
-/* styles/header.css */
 header {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
-  
-  .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: cyan;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-  
-  nav {
-    display: flex;
-    gap: 20px;
-  }
-  
-  nav a {
-    text-decoration: none;
-    color: white;
-    font-size: 16px;
-    transition: 0.3s;
-  }
-  
-  nav a:hover {
-    color: cyan;
-    text-shadow: 0 0 8px cyan;
-  }
-  
-  .search-box {
-    display: flex;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px;
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-  }
-  
-  .search-box input {
-    background: transparent;
-    border: none;
-    padding: 8px;
-    color: white;
-    outline: none;
-  }
-  
-  .search-box button {
-    background: cyan;
-    border: none;
-    padding: 8px 15px;
-    cursor: pointer;
-    border-radius: 20px;
-    color: black;
-    font-weight: bold;
-    transition: 0.3s;
-  }
-  
-  .search-box button:hover {
-    background: white;
-    color: cyan;
-  }
-  
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px); /* Slight blur effect for futuristic feel */
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: cyan;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+
+nav {
+  display: flex;
+  gap: 25px;
+}
+
+nav a {
+  text-decoration: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+nav a:hover {
+  color: cyan;
+  text-shadow: 0 0 8px cyan;
+}
+
+.search-box {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  color: white;
+  outline: none;
+  font-size: 14px;
+}
+
+.search-box button {
+  background: cyan;
+  border: none;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 20px;
+  color: black;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.search-box button:hover {
+  background: white;
+  color: cyan;
+}

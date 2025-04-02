@@ -21,14 +21,24 @@ export default function Products() {
     }
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async (event) => {
+    event.preventDefault();
+    if (!search.trim()) return;
+
     try {
-      const res = await axios.get(`http://localhost:5000/products/search?query=${search}`);
+      const res = await axios.get(`http://localhost:5000/search?q=${search}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       setProducts(res.data);
     } catch (error) {
-      console.error("Search failed:", error);
+      console.error("Error fetching search results:", error);
+      alert("Failed to fetch search results!");
     }
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    fetchProducts(); // Reload all products
   };
 
   return (
@@ -44,6 +54,11 @@ export default function Products() {
             className="search-input"
           />
           <button type="submit" className="search-button">🔍</button>
+          {search && (
+            <button type="button" onClick={handleClear} className="clear-button">
+              Clear All
+            </button>
+          )}
         </form>
 
         <h2 className="products-heading">Fresh & Organic Products</h2>
@@ -55,14 +70,14 @@ export default function Products() {
               <div 
                 key={product.id} 
                 className="product-card"
-                onClick={() => router.push(`/products/${product.id}`)} // Click to go to product details
-                style={{ cursor: "pointer" }} 
+                onClick={() => router.push(`/products/${product.id}`)}
+                style={{ cursor: "pointer" }}
               >
                 <img src={product.image_url} alt={product.name} className="product-image" />
                 <div className="product-info">
                   <h3 className="product-name">{product.name}</h3>
                   <p className="product-price">₹{product.price}</p>
-                  <button className="add-to-cart-button">Add to Cart</button>
+                  <button className="add-to-cart-button">More Info</button>
                 </div>
               </div>
             ))

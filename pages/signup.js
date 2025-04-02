@@ -12,25 +12,61 @@ export default function Signup() {
     role: "customer", // Default role
   });
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validate = () => {
+    const errors = {};
+    // Email validation (basic format check)
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Please enter a valid email address.";
+    }
+    // Phone number validation (basic check)
+    if (!formData.phone || formData.phone.length < 10) {
+      errors.phone = "Phone number must be at least 10 digits.";
+    }
+    // Password validation (min length check)
+    if (!formData.password || formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters long.";
+    }
+    // Name validation (required)
+    if (!formData.name) {
+      errors.name = "Full Name is required.";
+    }
+    // Address validation (required)
+    if (!formData.address) {
+      errors.address = "Address is required.";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0; // If no errors, return true
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
-    setError(""); // Clear errors
-
+    setError(""); // Clear any previous errors
+  
+    if (!validate()) {
+      return; // Stop if validation fails
+    }
+  
     try {
       await axios.post("http://localhost:5000/signup", formData);
-      alert("Signup successful! Please login.");
-      router.push("/login"); // Redirect to login page
+      alert("Signup successful! Redirecting...");
+  
+      if (formData.role === "farmer") {
+        router.push("/farmer-dashboard"); // Redirect farmers to a dedicated dashboard
+      } else {
+        router.push("/products"); // Redirect customers to the product page
+      }
     } catch (err) {
       setError("Signup failed! Please check your details.");
     }
   };
-
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Create an Account</h2>
@@ -38,14 +74,68 @@ export default function Signup() {
       {error && <p style={styles.error}>{error}</p>}
 
       <form onSubmit={handleSignup} style={styles.form}>
-        <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required style={styles.input} />
-        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required style={styles.input} />
-        <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required style={styles.input} />
-        <input type="text" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} required style={styles.input} />
-        <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required style={styles.input} />
+        <input
+          type="text"
+          name="name"
+          placeholder="Full Name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
+        {validationErrors.name && <span style={styles.error}>{validationErrors.name}</span>}
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
+        {validationErrors.email && <span style={styles.error}>{validationErrors.email}</span>}
+
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
+        {validationErrors.password && <span style={styles.error}>{validationErrors.password}</span>}
+
+        <input
+          type="text"
+          name="phone"
+          placeholder="Phone Number"
+          value={formData.phone}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
+        {validationErrors.phone && <span style={styles.error}>{validationErrors.phone}</span>}
+
+        <input
+          type="text"
+          name="address"
+          placeholder="Address"
+          value={formData.address}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
+        {validationErrors.address && <span style={styles.error}>{validationErrors.address}</span>}
 
         <label style={styles.label}>Role:</label>
-        <select name="role" value={formData.role} onChange={handleChange} style={styles.select}>
+        <select
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          style={styles.select}
+        >
           <option value="customer">Customer</option>
           <option value="farmer">Farmer</option>
         </select>
@@ -78,6 +168,7 @@ const styles = {
   error: {
     color: "red",
     marginBottom: "10px",
+    fontSize: "14px",
   },
   form: {
     display: "flex",
