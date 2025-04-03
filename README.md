@@ -1,7 +1,5 @@
 # AgriLink
 Agri E-Commerce
-Here’s your **README.md** file content for AgriLink:  
-
 ---
 
 # AgriLink - Connecting Farmers & Customers 🌱  
