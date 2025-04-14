@@ -2,8 +2,6 @@ const express = require("express");
 const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-
 const app = express();
 const port = 5000;
 const cors = require("cors");
@@ -14,9 +12,12 @@ console.log("Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
 console.log("Razorpay Key Secret:", process.env.RAZORPAY_KEY_SECRET);
 
 
+
 app.use(express.json()); // ✅ Middleware to parse JSON requests
 
-const SECRET_KEY = "your_secret_key"; // Replace with a strong secret key
+const SECRET_KEY = process.env.SECRET_KEY;
+console.log(SECRET_KEY);
+ // Replace with a strong secret key
 
 // ✅ MySQL Connection
 const db = mysql.createConnection({
@@ -42,30 +43,50 @@ app.get("/", (req, res) => {
 // ✅ User Signup
 app.post("/signup", async (req, res) => {
     const { name, email, password, phone, address, role } = req.body;
-
+  
     if (!name || !email || !password || !phone || !address || !role) {
-        return res.status(400).json({ error: "All fields are required!" });
+      return res.status(400).json({ error: "All fields are required!" });
     }
-
+  
     db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
-        if (err) return res.status(500).json({ error: "Database error!" });
-
-        if (results.length > 0) {
-            return res.status(400).json({ error: "Email already registered!" });
+      if (err) return res.status(500).json({ error: "Database error!" });
+  
+      if (results.length > 0) {
+        return res.status(400).json({ error: "Email already registered!" });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      // Insert into users table
+      db.query(
+        "INSERT INTO users (name, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)",
+        [name, email, hashedPassword, phone, address, role],
+        (err, userResult) => {
+          if (err) return res.status(500).json({ error: "Failed to register user!" });
+          
+          // If the role is 'farmer', also insert into the farmers table.
+          if (role === "farmer") {
+            // Here we insert into the farmers table using the same ID from the users table.
+            // This assumes that the user's id from the 'users' table should match the farmer's id in 'farmers'.
+            db.query(
+              "INSERT INTO farmers (id, name, email, phone) VALUES (?, ?, ?, ?)",
+              [userResult.insertId, name, email, phone],
+              (err, farmerResult) => {
+                if (err) {
+                  console.error("Error inserting into farmers:", err);
+                  return res.status(500).json({ error: "Failed to register farmer!" });
+                }
+                res.status(201).json({ message: "User and farmer registered successfully!" });
+              }
+            );
+          } else {
+            res.status(201).json({ message: "User registered successfully!" });
+          }
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        db.query(
-            "INSERT INTO users (name, email, password, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)",
-            [name, email, hashedPassword, phone, address, role],
-            (err) => {
-                if (err) return res.status(500).json({ error: "Failed to register user!" });
-                res.status(201).json({ message: "User registered successfully!" });
-            }
-        );
+      );
     });
-});
+  });
+  
 // ✅ User Login
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
@@ -90,15 +111,16 @@ app.post("/login", (req, res) => {
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         SECRET_KEY,
-        { expiresIn: "24h" }
+        { expiresIn: "1h" }
       );
       //localStorage.setItem("token", response.data.token);
+      const farmerId = user.role === "farmer" ? user.id : null;
 
       // Send token and farmer_id (or user.id) along with the login success message
       res.json({
         message: "Login successful!",
         token,
-        farmer_id: user.farmer_id, // Send farmer_id (or user.id) if relevant
+        farmer_id: farmerId, // Send farmer_id (or user.id) if relevant
         role: user.role, // Optionally include user role if required
       });
     });
@@ -112,6 +134,8 @@ const authenticateToken = (req, res, next) => {
     try {
         const verified = jwt.verify(token.replace("Bearer ", ""), SECRET_KEY);
         req.user = verified;
+        console.log("Decoded user:", verified);
+
         next();
     } catch (err) {
         res.status(403).json({ message: "Invalid or expired token!" });
@@ -180,7 +204,7 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
     if (!name || !price || !quantity) {
         return res.status(400).json({ message: "Name, price, and quantity are required!" });
     }
-
+    console.log("Image URL:", image_url);
     db.query(
         "INSERT INTO products (farmer_id, name, description, price, quantity, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [farmer_id || null, name, description, price, quantity, category, image_url],
@@ -504,53 +528,69 @@ if (!fs.existsSync(invoiceDir)) {
 }
 
 app.get("/invoice/:orderId", authenticateToken, (req, res) => {
-  const { orderId } = req.params;
-  const user_id = req.user.id;
-
-  // Fetch order details from database
-  db.query(
-    "SELECT o.id, o.total_price, o.status, o.created_at, GROUP_CONCAT(p.name SEPARATOR ', ') AS products FROM orders o JOIN order_items oi ON o.id = oi.order_id JOIN products p ON oi.product_id = p.id WHERE o.user_id = ? AND o.id = ? GROUP BY o.id",
-    [user_id, orderId],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: "Database error!" });
-      if (results.length === 0) return res.status(404).json({ message: "Order not found!" });
-
-      const order = results[0];
-
-      // Create PDF Invoice
-      const doc = new PDFDocument();
-      const filePath = `${invoiceDir}/order_${order.id}.pdf`;
-      const stream = fs.createWriteStream(filePath);
-      doc.pipe(stream);
-
-      doc.fontSize(20).text("Invoice", { align: "center" });
-      doc.moveDown();
-      doc.fontSize(14).text(`Order ID: ${order.id}`);
-      doc.text(`Total Price: ₹${order.total_price}`);
-      doc.text(`Status: ${order.status}`);
-      doc.text(`Ordered On: ${new Date(order.created_at).toLocaleString()}`);
-      doc.moveDown();
-      doc.text(`Products: ${order.products}`);
-      doc.end();
-
-      // Send File Once Ready
-      stream.on("finish", () => {
-        res.download(filePath, `Invoice_Order_${order.id}.pdf`, (err) => {
-          if (err) {
-            console.error("Error sending the file:", err);
-            return res.status(500).json({ error: "Failed to send the invoice!" });
-          }
+    const { orderId } = req.params;
+    const user_id = req.user.id;
+  
+    // Fetch order details along with user name & email
+    db.query(
+      `SELECT 
+          o.id, o.total_price, o.status, o.created_at, 
+          GROUP_CONCAT(p.name SEPARATOR ', ') AS products, 
+          u.name AS user_name, u.email AS user_email 
+      FROM orders o 
+      JOIN order_items oi ON o.id = oi.order_id 
+      JOIN products p ON oi.product_id = p.id 
+      JOIN users u ON o.user_id = u.id 
+      WHERE o.user_id = ? AND o.id = ? 
+      GROUP BY o.id`,
+      [user_id, orderId],
+      (err, results) => {
+        if (err) return res.status(500).json({ error: "Database error!" });
+        if (results.length === 0) return res.status(404).json({ message: "Order not found!" });
+  
+        const order = results[0];
+  
+        // Create PDF Invoice
+        const doc = new PDFDocument();
+        const filePath = `${invoiceDir}/order_${order.id}.pdf`;
+        const stream = fs.createWriteStream(filePath);
+        doc.pipe(stream);
+  
+        doc.fontSize(20).text("Invoice", { align: "center" });
+        doc.moveDown();
+        
+        // Include user details
+        doc.fontSize(14).text(`Customer Name: ${order.user_name}`);
+        doc.text(`Customer Email: ${order.user_email}`);
+        doc.moveDown();
+  
+        // Order details
+        doc.text(`Order ID: ${order.id}`);
+        doc.text(`Total Price: ₹${order.total_price}`);
+        doc.text(`Ordered On: ${new Date(order.created_at).toLocaleString()}`);
+        doc.moveDown();
+        doc.text(`Products: ${order.products}`);
+  
+        doc.end();
+  
+        // Send File Once Ready
+        stream.on("finish", () => {
+          res.download(filePath, `Invoice_Order_${order.id}.pdf`, (err) => {
+            if (err) {
+              console.error("Error sending the file:", err);
+              return res.status(500).json({ error: "Failed to send the invoice!" });
+            }
+          });
         });
-      });
-
-      // Handle errors in creating the PDF
-      stream.on("error", (err) => {
-        console.error("Error creating PDF:", err);
-        res.status(500).json({ error: "Failed to create the invoice!" });
-      });
-    }
-  );
-});app.get("/search", (req, res) => {
+  
+        stream.on("error", (err) => {
+          console.error("Error creating PDF:", err);
+          res.status(500).json({ error: "Failed to create the invoice!" });
+        });
+      }
+    );
+  });
+  app.get("/search", (req, res) => {
     const { q } = req.query;
     if (!q) return res.status(400).json({ error: "Search query is required!" });
 
@@ -558,6 +598,15 @@ app.get("/invoice/:orderId", authenticateToken, (req, res) => {
         if (err) return res.status(500).json({ error: "Database error!" });
         res.json(results);
     });
-});
-
+});app.post("/payment/success/:id", authenticateToken, async (req, res) => {
+    const orderId = req.params.id;
+    try {
+      await db.query("UPDATE orders SET status = ? WHERE id = ?", ["Paid", orderId]);
+      res.json({ message: "Payment simulated and status updated." });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Payment simulation failed" });
+    }
+  });
+  
   

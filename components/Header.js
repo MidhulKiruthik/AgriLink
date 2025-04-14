@@ -9,7 +9,9 @@ export default function Header() {
         <Link href="/products">Products</Link>
         <Link href="/cart">Cart</Link>
         <Link href="/orders">My Orders</Link>
+        <Link href="/farmer-dashboard">Sell</Link>
         <Link href="/profile">Profile</Link>
+    
     
       </nav>
     

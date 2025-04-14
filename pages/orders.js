@@ -25,48 +25,6 @@ export default function Orders() {
     }
   };
 
-  const downloadInvoice = async (orderId) => {
-    try {
-      const response = await fetch(`http://localhost:5000/invoice/${orderId}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to download invoice: ${response.statusText}`);
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `Invoice_${orderId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Error downloading invoice:", error);
-      alert("Failed to download invoice! Please try again.");
-    }
-  };
-
-  const updateStatus = async (orderId, newStatus) => {
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/order/${orderId}/status`,
-        { status: newStatus },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      alert(response.data.message);
-      fetchOrders();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      alert("Failed to update order status. Please try again.");
-    }
-  };
-
   return (
     <Layout>
       <div style={styles.container}>
@@ -91,13 +49,8 @@ export default function Orders() {
             {orders.map((order) => (
               <div key={order.id} style={styles.orderCard}>
                 <div style={styles.cardHeader}>
-                  <div>
-                  
-                   
-                  </div>
-                  <div style={styles.statusBadge(order.status)}>
-                    {order.status}
-                  </div>
+    
+        
                 </div>
 
                 <div style={styles.orderDetails}>
@@ -127,23 +80,25 @@ export default function Orders() {
                 </div>
 
                 <div style={styles.actionButtons}>
-                  <select
-                    value={order.status}
-                    onChange={(e) => updateStatus(order.id, e.target.value)}
-                    style={styles.statusDropdown}
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
+                 
+            
+                  <button
+  onClick={() => window.location.href = `/payment/${order.id}`}
+  style={{
+    padding: "10px 16px",
+    fontSize: "14px",
+    fontWeight: "600",
+    backgroundColor: "#48bb78",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginLeft: "10px"
+  }}
+>
+  💳 Pay Now
+</button>
 
-                  <button 
-                    onClick={() => downloadInvoice(order.id)} 
-                    style={styles.invoiceButton}
-                  >
-                    <span style={styles.buttonIcon}>📄</span> Invoice
-                  </button>
                 </div>
               </div>
             ))}
@@ -257,20 +212,8 @@ const styles = {
     color: "#2d3748",
     margin: "0",
   },
-  statusBadge: (status) => ({
-    fontSize: "12px",
-    fontWeight: "600",
-    padding: "6px 12px",
-    borderRadius: "20px",
-    backgroundColor: 
-      status === "Pending" ? "#fffaf0" : 
-      status === "Shipped" ? "#ebf8ff" : 
-      status === "Delivered" ? "#f0fff4" : "#fff5f5",
-    color: 
-      status === "Pending" ? "#dd6b20" : 
-      status === "Shipped" ? "#3182ce" : 
-      status === "Delivered" ? "#38a169" : "#e53e3e",
-  }),
+ 
+
   orderDetails: {
     display: "grid",
     gridTemplateColumns: "repeat(2, 1fr)",
@@ -339,22 +282,7 @@ const styles = {
       boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.2)",
     },
   },
-  invoiceButton: {
-    padding: "10px 16px",
-    fontSize: "14px",
-    fontWeight: "600",
-    backgroundColor: "#4299e1",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    transition: "background-color 0.2s ease",
-    ":hover": {
-      backgroundColor: "#3182ce",
-    },
-  },
+
   buttonIcon: {
     marginRight: "8px",
     fontSize: "16px",

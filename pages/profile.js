@@ -10,11 +10,19 @@ export default function Profile() {
   const router = useRouter();
 
   useEffect(() => {
+    
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
-    try {
+    
+    try {  const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to log in first!");
+        window.location.href = "/login"; // Redirect to login page
+        return;
+      }
+
       const res = await axios.get("http://localhost:5000/profile", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });

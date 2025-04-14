@@ -90,7 +90,8 @@ export default function ProductDetail() {
           <div style={styles.imageContainer}>
             <div style={styles.imageWrapper}>
               <img 
-                src={product.image_url || '/placeholder-product.jpg'} 
+              src={`http://localhost:5000${product.image_url}` || '/placeholder-product.jpg'}
+
                 alt={product.name} 
                 style={styles.productImage}
                 onError={(e) => {

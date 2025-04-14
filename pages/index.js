@@ -6,11 +6,9 @@ export default function Home() {
 
   const handleShopNow = () => {
     const token = localStorage.getItem("token");
-    if (token) {
-      router.push("/products");
-    } else {
+    
       router.push("/login");
-    }
+    
   };
 
   return (

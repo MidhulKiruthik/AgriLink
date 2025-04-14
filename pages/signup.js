@@ -61,7 +61,7 @@ export default function Signup() {
       if (formData.role === "farmer") {
         router.push("/farmer-dashboard"); // Redirect farmers to a dedicated dashboard
       } else {
-        router.push("/products"); // Redirect customers to the product page
+        router.push("/login"); // Redirect customers to the product page
       }
     } catch (err) {
       setError("Signup failed! Please check your details.");
