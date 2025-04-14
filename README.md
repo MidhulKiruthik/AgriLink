@@ -33,7 +33,7 @@ AgriLink is a next-generation **e-commerce platform** that bridges the gap betwe
 
 ### 1️⃣ Clone the Repository  
 ```bash
-git clone https://github.com/your-username/agrilink.git
+git clone https://github.com/MidhulKiruthik/AgriLink.git
 cd agrilink
 ```
 
@@ -44,7 +44,7 @@ npm install
 
 ### 3️⃣ Set Up the Database  
 - Install MySQL and create a database named **agrilink**  
-- Import the SQL schema (`database_schema.sql` if available)  
+- Import the SQL schema (`database_schema.sql`)  
 
 ### 4️⃣ Start the Backend Server  
 ```bash
