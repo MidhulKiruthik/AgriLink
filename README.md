@@ -24,8 +24,11 @@ AgriLink is a next-generation **e-commerce platform** that bridges the gap betwe
 ✅ **Product Listings**: Farmers can list their products with images, descriptions, and pricing.  
 ✅ **Search & Filters**: Users can search for specific products.  
 ✅ **Cart System**: Customers can add products to their cart and place orders. 
+
 ✅ **Order Management**: Farmers can track orders placed by customers. 
+
 ✅ **Invoice Generation**: Users can successfully generate the invoice.
+
 ✅ **Fair Pricing**: Farmers decide their product pricing without intermediaries.  
 
 ---
