@@ -23,8 +23,9 @@ AgriLink is a next-generation **e-commerce platform** that bridges the gap betwe
 ✅ **User Authentication**: Customers and farmers can sign up and log in securely.  
 ✅ **Product Listings**: Farmers can list their products with images, descriptions, and pricing.  
 ✅ **Search & Filters**: Users can search for specific products.  
-✅ **Cart System**: Customers can add products to their cart and place orders.  
-✅ **Order Management**: Farmers can track orders placed by customers.  
+✅ **Cart System**: Customers can add products to their cart and place orders. 
+✅ **Order Management**: Farmers can track orders placed by customers. 
+✅ **Invoice Generation**: Users can successfully generate the invoice.
 ✅ **Fair Pricing**: Farmers decide their product pricing without intermediaries.  
 
 ---
@@ -44,7 +45,7 @@ npm install
 
 ### 3️⃣ Set Up the Database  
 - Install MySQL and create a database named **agrilink**  
-- Import the SQL schema (`database_schema.sql`)  
+- Import the SQL schema (`schema.sql`)  
 
 ### 4️⃣ Start the Backend Server  
 ```bash
@@ -70,14 +71,16 @@ The app should now be running at **http://localhost:3000** 🎉
 - Farmers can list their products with a name, price, and description  
 - Products will be visible to customers in the store  
 
-### **Ordering Products (For Customers)**  
+### **Ordering Products **  
 - Customers can add items to their cart and place an order  
-- Orders are stored in the database and visible in the **Orders** page  
+- Orders are stored in the database and visible in the **Orders** page
 
+### **Payment**
+-Users can pay through cards and download their invoice
 ---
 
-## 🏗 Future Improvements  
-🔹 Payment Gateway Integration  
+
+## 🏗 Future Improvements   
 🔹 Farmer Dashboard with Sales Reports  
 🔹 Delivery Tracking System  
 
