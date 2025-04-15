@@ -1,96 +1,92 @@
-# AgriLink
+AgriLink
 Agri E-Commerce
----
+AgriLink - Connecting Farmers & Customers 🌱
+AgriLink is a next-generation e-commerce platform that bridges the gap between farmers and customers. This platform allows customers to directly buy fresh produce from local farmers, ensuring fair pricing and a transparent marketplace. Farmers get complete control over their pricing, while customers receive farm-fresh products straight from the source.
 
-# AgriLink - Connecting Farmers & Customers 🌱  
+🛠 Tech Stack
+Frontend: Next.js (React)
 
-AgriLink is a next-generation **e-commerce platform** that bridges the gap between **farmers** and **customers**. This platform allows customers to directly buy fresh produce from local farmers, ensuring fair pricing and a transparent marketplace. Farmers get complete control over their pricing, while customers receive farm-fresh products straight from the source.  
+Backend: Node.js with Express
 
----
+Database: MySQL
 
-## 🛠 Tech Stack  
+Styling: Tailwind CSS
 
-- **Frontend:** Next.js (React)  
-- **Backend:** Node.js with Express  
-- **Database:** MySQL  
-- **Styling:** Tailwind CSS  
-- **Authentication:** JWT-based user authentication  
+Authentication: JWT-based user authentication
 
----
+🚀 Features
+✅ User Authentication: Customers and farmers can sign up and log in securely.
+✅ Product Listings: Farmers can list their products with images, descriptions, and pricing.
+✅ Search & Filters: Users can search for specific products.
+✅ Cart System: Customers can add products to their cart and place orders.
 
-## 🚀 Features  
+✅ Order Management: Farmers can track orders placed by customers.
 
-✅ **User Authentication**: Customers and farmers can sign up and log in securely.  
-✅ **Product Listings**: Farmers can list their products with images, descriptions, and pricing.  
-✅ **Search & Filters**: Users can search for specific products.  
-✅ **Cart System**: Customers can add products to their cart and place orders. 
+✅ Invoice Generation: Users can successfully generate the invoice.
 
-✅ **Order Management**: Farmers can track orders placed by customers. 
+✅ Fair Pricing: Farmers decide their product pricing without intermediaries.
 
-✅ **Invoice Generation**: Users can successfully generate the invoice.
+🖼 Screenshots
 
-✅ **Fair Pricing**: Farmers decide their product pricing without intermediaries.  
+AgriLink Homepage - Displaying Products
 
----
 
-## 🏗 Setting Up the Project  
+AgriLink Cart Page - Showing Added Items
 
-### 1️⃣ Clone the Repository  
-```bash
+
+AgriLink Order Confirmation
+
+🏗 Setting Up the Project
+1️⃣ Clone the Repository
+bash
+Copy
+Edit
 git clone https://github.com/MidhulKiruthik/AgriLink.git
 cd agrilink
-```
-
-### 2️⃣ Install Dependencies  
-```bash
+2️⃣ Install Dependencies
+bash
+Copy
+Edit
 npm install
-```
+3️⃣ Set Up the Database
+Install MySQL and create a database named agrilink
 
-### 3️⃣ Set Up the Database  
-- Install MySQL and create a database named **agrilink**  
-- Import the SQL schema (`schema.sql`)  
+Import the SQL schema (schema.sql)
 
-### 4️⃣ Start the Backend Server  
-```bash
+4️⃣ Start the Backend Server
+bash
+Copy
+Edit
 node server.js
-```
-
-### 5️⃣ Start the Frontend  
-```bash
+5️⃣ Start the Frontend
+bash
+Copy
+Edit
 npm run dev
-```
+The app should now be running at http://localhost:3000 🎉
 
-The app should now be running at **http://localhost:3000** 🎉  
+🛒 User Guide
+Sign Up & Login
+Customers and farmers can sign up using Name, Email, Phone Number, and Password
 
----
+After signing up, login requires only Email & Password
 
-## 🛒 User Guide  
+Adding Products (For Farmers)
+Farmers can list their products with a name, price, and description
 
-### **Sign Up & Login**  
-- Customers and farmers can sign up using **Name, Email, Phone Number, and Password**  
-- After signing up, login requires only **Email & Password**  
+Products will be visible to customers in the store
 
-### **Adding Products (For Farmers)**  
-- Farmers can list their products with a name, price, and description  
-- Products will be visible to customers in the store  
+Ordering Products
+Customers can add items to their cart and place an order
 
-### **Ordering Products **  
-- Customers can add items to their cart and place an order  
-- Orders are stored in the database and visible in the **Orders** page
+Orders are stored in the database and visible in the Orders page
 
-### **Payment**
--Users can pay through cards and download their invoice
----
+Payment
+Users can pay through cards and download their invoice
 
+🏗 Future Improvements
+🔹 Farmer Dashboard with Sales Reports
+🔹 Delivery Tracking System
 
-## 🏗 Future Improvements   
-🔹 Farmer Dashboard with Sales Reports  
-🔹 Delivery Tracking System  
-
----
-
-## 📝 Contributing  
-If you'd like to contribute, feel free to fork this repo and submit a pull request!  
-
----
-
+📝 Contributing
+If you'd like to contribute, feel free to fork this repo and submit a pull request!
