@@ -113,7 +113,8 @@ export default function ProductDetail() {
                 alt={product.name} 
                 style={styles.productImage}
                 onError={(e) => {
-                  e.target.src = '/placeholder-product.jpg'
+                  // Fallback to known placeholder served via /uploads route
+                  e.target.src = '/uploads/placeholder-product.jpg'
                 }}
               />
             </div>
