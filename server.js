@@ -78,21 +78,20 @@ app.post("/signup", async (req, res) => {
           if (err) return res.status(500).json({ error: "Failed to register user!" });
           
           // If the role is 'farmer', also insert into the farmers table.
-          if (role === "farmer") {
-            // Here we insert into the farmers table using the same ID from the users table.
-            // This assumes that the user's id from the 'users' table should match the farmer's id in 'farmers'.
-            db.query(
-              "INSERT INTO farmers (id, name, email, phone) VALUES (?, ?, ?, ?)",
-              [userResult.insertId, name, email, phone],
-              (err, farmerResult) => {
-                if (err) {
-                  console.error("Error inserting into farmers:", err);
-                  return res.status(500).json({ error: "Failed to register farmer!" });
-                }
-                res.status(201).json({ message: "User and farmer registered successfully!" });
-              }
-            );
-          } else {
+                    if (role === "farmer") {
+                        // Insert farmer profile linked to the created user via user_id
+                        db.query(
+                            "INSERT INTO farmers (name, email, phone, user_id) VALUES (?, ?, ?, ?)",
+                            [name, email, phone, userResult.insertId],
+                            (err, farmerResult) => {
+                                if (err) {
+                                    console.error("Error inserting into farmers:", err);
+                                    return res.status(500).json({ error: "Failed to register farmer!" });
+                                }
+                                res.status(201).json({ message: "User and farmer registered successfully!", farmer_id: farmerResult.insertId });
+                            }
+                        );
+                    } else {
             res.status(201).json({ message: "User registered successfully!" });
           }
         }
