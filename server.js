@@ -255,7 +255,11 @@ const s3UploadsProxy = async (req, res, next) => {
             return next();
         }
         // Normalize key from path: '/uploads/foo.jpg' -> 'uploads/foo.jpg'
-        const remainder = (req.params && req.params.path) ? String(req.params.path) : req.path.replace(/^\/+/, "").replace(/^uploads\/?/, "");
+        // Express 5 + path-to-regexp v8 with ':path*' may provide a string or an array of segments.
+        const rawParam = req.params ? req.params.path : undefined;
+        const remainder = Array.isArray(rawParam)
+            ? rawParam.join("/")
+            : (rawParam ? String(rawParam) : req.path.replace(/^\/+/, "").replace(/^uploads\/?/, ""));
         const key = `uploads/${remainder}`;
         if (!key.startsWith("uploads/") || key === 'uploads/') return next();
 
@@ -300,9 +304,9 @@ const s3UploadsProxy = async (req, res, next) => {
     }
 };
 
-// Express 5 + path-to-regexp v8: use named star param instead of wildcard
-app.get("/uploads/:path(*)", s3UploadsProxy);
-app.head("/uploads/:path(*)", s3UploadsProxy);
+// Express 5 + path-to-regexp v8: use a repeating param to capture the rest of the path
+app.get("/uploads/:path*", s3UploadsProxy);
+app.head("/uploads/:path*", s3UploadsProxy);
 
 // Mark static responses for debugging (runs only if proxy called next())
 app.use("/uploads", (req, res, next) => { res.set("X-Source", "static"); next(); });
