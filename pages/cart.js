@@ -18,7 +18,7 @@ export default function Cart() {
         return;
       }
 
-      const res = await axios.get("http://localhost:5000/cart", {
+      const res = await axios.get("/api/cart", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCartItems(res.data);
@@ -44,7 +44,7 @@ export default function Cart() {
         return;
       }
 
-      await axios.delete(`http://localhost:5000/cart/${id}`, {
+      await axios.delete(`/api/cart/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchCart();
@@ -65,7 +65,7 @@ export default function Cart() {
       }
 
       await axios.put(
-        `http://localhost:5000/cart/${id}`,
+        `/api/cart/${id}`,
         { quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -91,7 +91,7 @@ export default function Cart() {
         return;
       }
 
-      await axios.post("http://localhost:5000/checkout", {}, {
+      await axios.post("/api/checkout", {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"node server.js\" \"next dev\"",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3000",
+    "start:backend": "node server.js",
+    "seed": "node scripts/seed.js",
+    "migrate:images": "node scripts/migrate_uploads_to_s3.js",
+    "pm2": "pm2 start ecosystem.config.js && pm2 save",
     "lint": "next lint"
   },
   "dependencies": {
@@ -63,6 +67,8 @@
     "nodemailer": "latest",
     "path": "latest",
     "pdfkit": "^0.16.0",
+  "@aws-sdk/client-s3": "^3.679.0",
+  "@aws-sdk/s3-request-presigner": "^3.679.0",
     "razorpay": "latest",
     "react": "^19",
     "react-day-picker": "8.10.1",
@@ -81,6 +87,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "concurrently": "^9.0.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

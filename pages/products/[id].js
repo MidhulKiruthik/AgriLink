@@ -16,7 +16,7 @@ export default function ProductDetail() {
     if (id) {
       setLoading(true);
       axios
-        .get(`http://localhost:5000/products/${id}`)
+  .get(`/api/products/${id}`)
         .then((res) => {
           setProduct(res.data);
           setError(null);
@@ -33,7 +33,7 @@ export default function ProductDetail() {
     setAddingToCart(true);
     try {
       await axios.post(
-        "http://localhost:5000/cart",
+        "/api/cart",
         { product_id: id, quantity },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
@@ -90,8 +90,26 @@ export default function ProductDetail() {
           <div style={styles.imageContainer}>
             <div style={styles.imageWrapper}>
               <img 
-              src={`http://localhost:5000${product.image_url}` || '/placeholder-product.jpg'}
-
+                src={(function(){
+                  if (!product.image_url) return '/uploads/placeholder-product.jpg';
+                  if (product.image_url.startsWith('http')) return product.image_url;
+                  if (product.image_url.startsWith('/uploads')) {
+                    const cdn = process.env.NEXT_PUBLIC_CDN_URL;
+                    const bucket = process.env.NEXT_PUBLIC_S3_BUCKET;
+                    const region = process.env.NEXT_PUBLIC_S3_REGION || 'eu-north-1';
+                    if (cdn) return `${cdn}${product.image_url}`; // includes leading slash
+                    if (bucket) return `https://${bucket}.s3.${region}.amazonaws.com${product.image_url}`;
+                    return product.image_url; // local dev fallback
+                  }
+                  if (product.image_url.startsWith('uploads/')) {
+                    const cdn = process.env.NEXT_PUBLIC_CDN_URL;
+                    const bucket = process.env.NEXT_PUBLIC_S3_BUCKET;
+                    const region = process.env.NEXT_PUBLIC_S3_REGION || 'eu-north-1';
+                    if (cdn) return `${cdn}/${product.image_url}`;
+                    if (bucket) return `https://${bucket}.s3.${region}.amazonaws.com/${product.image_url}`;
+                  }
+                  return `/uploads/${product.image_url}`;
+                })()}
                 alt={product.name} 
                 style={styles.productImage}
                 onError={(e) => {

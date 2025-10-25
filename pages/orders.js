@@ -13,7 +13,7 @@ export default function Orders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/orders", {
+      const res = await axios.get("/api/orders", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
       });
       setOrders(res.data);

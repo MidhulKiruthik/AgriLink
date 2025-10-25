@@ -3,28 +3,41 @@ const mysql = require("mysql2");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const app = express();
-const port = 5000;
+const port = process.env.PORT ? Number(process.env.PORT) : 5000;
 const cors = require("cors");
 app.use(cors());
 require("dotenv").config();
 
-console.log("Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
-console.log("Razorpay Key Secret:", process.env.RAZORPAY_KEY_SECRET);
-
-
-
 app.use(express.json()); // ✅ Middleware to parse JSON requests
 
 const SECRET_KEY = process.env.SECRET_KEY;
-console.log(SECRET_KEY);
  // Replace with a strong secret key
+
+// ✅ AWS S3 (for presigned uploads)
+let S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, getSignedUrl;
+try {
+    ({ S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3"));
+    ({ getSignedUrl } = require("@aws-sdk/s3-request-presigner"));
+} catch (e) {
+    // Modules may not be installed locally; endpoint will check before using
+}
+const S3_BUCKET = process.env.S3_BUCKET;
+const S3_REGION = process.env.S3_REGION || "eu-north-1";
+const USE_S3 = (process.env.USE_S3 || "false").toLowerCase() === "true";
+const ASSET_CACHE_CONTROL = process.env.ASSET_CACHE_CONTROL || "public, max-age=31536000, immutable";
+let s3 = null;
+if (USE_S3 && S3Client) {
+    s3 = new S3Client({ region: S3_REGION });
+}
+console.log(`[Startup] USE_S3=${USE_S3} | S3_BUCKET=${S3_BUCKET ? 'set' : 'missing'} | REGION=${S3_REGION}`);
 
 // ✅ MySQL Connection
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "00000", // Replace with your MySQL password
-    database: "agri_ecommerce"
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "00000", // Replace with your MySQL password
+    database: process.env.DB_NAME || "agrilink",
+    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
 });
 
 db.connect((err) => {
@@ -180,6 +193,13 @@ app.get("/orders", authenticateToken, (req, res) => {
 });
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Configure multer for file storage
 const storage = multer.diskStorage({
@@ -199,7 +219,15 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
     }
 
     const { farmer_id, name, description, price, quantity, category } = req.body;
-    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
+    // Prefer image_key (S3 object key), then explicit image_url (S3/CDN URL), else fallback to uploaded file path
+    let image_url = null;
+    if (req.body && typeof req.body.image_key === "string" && req.body.image_key.trim() !== "") {
+        image_url = req.body.image_key.trim();
+    } else if (req.body && typeof req.body.image_url === "string" && req.body.image_url.trim() !== "") {
+        image_url = req.body.image_url.trim();
+    } else if (req.file) {
+        image_url = `/uploads/${req.file.filename}`;
+    }
 
     if (!name || !price || !quantity) {
         return res.status(400).json({ message: "Name, price, and quantity are required!" });
@@ -220,7 +248,115 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
 
 
 // ✅ Serve uploaded images
+// Temporary proxy: If USE_S3 is enabled, try fetching from S3 first; otherwise fall back to local static files
+const s3UploadsProxy = async (req, res, next) => {
+    try {
+        if (!USE_S3 || !s3 || !GetObjectCommand) {
+            return next();
+        }
+        // Normalize key from path: '/uploads/foo.jpg' -> 'uploads/foo.jpg'
+        const key = req.path.replace(/^\/+/, "");
+        if (!key.startsWith("uploads/")) return next();
+
+        // For HEAD requests, fetch only headers
+        if (req.method === 'HEAD' && HeadObjectCommand) {
+            res.set("X-Source", "s3-proxy");
+            const head = await s3.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: key }));
+            if (head.ContentType) res.set("Content-Type", head.ContentType);
+            res.set("Cache-Control", head.CacheControl || ASSET_CACHE_CONTROL);
+            if (head.ETag) res.set("ETag", String(head.ETag).replace(/\"/g, ""));
+            if (head.LastModified) res.set("Last-Modified", new Date(head.LastModified).toUTCString());
+            if (typeof head.ContentLength === 'number') res.set("Content-Length", String(head.ContentLength));
+            res.set("Accept-Ranges", "bytes");
+            return res.status(200).end();
+        }
+
+        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
+        const data = await s3.send(cmd);
+
+    res.set("X-Source", "s3-proxy");
+        if (data.ContentType) res.set("Content-Type", data.ContentType);
+        res.set("Cache-Control", data.CacheControl || ASSET_CACHE_CONTROL);
+        if (data.ETag) res.set("ETag", String(data.ETag).replace(/\"/g, ""));
+        if (data.LastModified) res.set("Last-Modified", new Date(data.LastModified).toUTCString());
+        if (typeof data.ContentLength === 'number') res.set("Content-Length", String(data.ContentLength));
+        res.set("Accept-Ranges", "bytes");
+
+        if (data.Body && typeof data.Body.pipe === "function") {
+            return data.Body.pipe(res);
+        } else if (data.Body) {
+            // In some runtimes Body can be a Uint8Array
+            return res.send(data.Body);
+        }
+        return res.status(404).end();
+    } catch (err) {
+        // On not found, allow falling back to local static (if exists)
+        if (err && (err.name === 'NoSuchKey' || err.$metadata?.httpStatusCode === 404)) {
+            return next();
+        }
+        console.error("S3 proxy error:", err);
+        return res.status(404).end();
+    }
+};
+
+app.get("/uploads/*", s3UploadsProxy);
+app.head("/uploads/*", s3UploadsProxy);
+
+// Mark static responses for debugging (runs only if proxy called next())
+app.use("/uploads", (req, res, next) => { res.set("X-Source", "static"); next(); });
+// Local static fallback (for dev or legacy files on disk)
 app.use("/uploads", express.static("uploads"));
+
+// ✅ Presigned URL endpoint for direct-to-S3 uploads (admin/farmer only)
+app.post("/uploads/presign", authenticateToken, async (req, res) => {
+    try {
+        if (!USE_S3) {
+            return res.status(400).json({ error: "S3 uploads disabled. Set USE_S3=true in environment." });
+        }
+        if (!s3 || !getSignedUrl || !PutObjectCommand) {
+            return res.status(500).json({ error: "S3 SDK not available on server. Install @aws-sdk/client-s3 and @aws-sdk/s3-request-presigner." });
+        }
+        if (req.user.role !== "admin" && req.user.role !== "farmer") {
+            return res.status(403).json({ message: "Access denied! Admin or Farmer only." });
+        }
+
+        const { contentType, ext } = req.body || {};
+        const allowed = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+        if (!contentType || !allowed.has(contentType)) {
+            return res.status(400).json({ error: "Invalid or missing contentType. Allowed: image/jpeg, image/png, image/webp." });
+        }
+
+        const extMap = {
+            "image/jpeg": "jpg",
+            "image/jpg": "jpg",
+            "image/png": "png",
+            "image/webp": "webp",
+        };
+        const fileExt = (ext && /^[a-zA-Z0-9]+$/.test(ext)) ? ext : extMap[contentType] || "bin";
+        const key = `uploads/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${fileExt}`;
+
+        const cmd = new PutObjectCommand({
+            Bucket: S3_BUCKET,
+            Key: key,
+            ContentType: contentType,
+            CacheControl: ASSET_CACHE_CONTROL,
+        });
+        const url = await getSignedUrl(s3, cmd, { expiresIn: 300 }); // 5 minutes
+        const publicUrl = `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+
+        return res.json({
+            url,
+            key,
+            headers: { "Content-Type": contentType, "Cache-Control": ASSET_CACHE_CONTROL },
+            publicUrl,
+            bucket: S3_BUCKET,
+            region: S3_REGION,
+        });
+    } catch (err) {
+        console.error("Presign error:", err);
+        return res.status(500).json({ error: "Failed to generate presigned URL" });
+    }
+});
 
 // ✅ Get All Products
 app.get("/products", (req, res) => {
@@ -519,8 +655,8 @@ app.get("/profile", authenticateToken, (req, res) => {
 
         res.json({ message: "Profile accessed successfully!", user: results[0] });
     });
-});const PDFDocument = require("pdfkit");
-const fs = require("fs");
+});
+const PDFDocument = require("pdfkit");
 
 const invoiceDir = "invoices";
 if (!fs.existsSync(invoiceDir)) {

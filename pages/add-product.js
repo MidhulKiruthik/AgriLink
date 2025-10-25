@@ -11,36 +11,121 @@ export default function AddProduct() {
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [imageKey, setImageKey] = useState(null); // S3 object key returned by presign/upload
   const router = useRouter();
 
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setProduct({ ...product, image: file });
-      setImagePreview(URL.createObjectURL(file)); // Show image preview
+    if (!file) return;
+
+    setProduct({ ...product, image: file });
+    setImagePreview(URL.createObjectURL(file));
+    setError("");
+    setImageKey(null);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please log in before uploading an image.");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setProgress(5);
+
+      // Derive a safe extension
+      const name = file.name || "upload";
+      const parts = name.split(".");
+      const ext = parts.length > 1 ? parts.pop().toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+
+      // 1) Presign
+      const presign = await axios.post(
+        "/api/uploads/presign",
+        { contentType: file.type, ext },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setProgress(20);
+      const { url, headers, key } = presign.data || {};
+      if (!url || !headers || !key) throw new Error("Invalid presign response");
+
+      // 2) Upload using XHR to get progress events
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", url);
+        Object.entries(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v));
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            // scale from 20..90 during upload
+            setProgress(Math.max(20, Math.min(90, pct)));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) return resolve();
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error("Network error during upload"));
+        xhr.send(file);
+      });
+
+      setProgress(100);
+      setImageKey(key); // store S3 object key for submit
+    } catch (err) {
+      console.error(err);
+      setError(err?.message || "Failed to upload image to S3.");
+      setImageKey(null);
+    } finally {
+      setUploading(false);
+      setTimeout(() => setProgress(0), 800);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      formData.append("image", product.image);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to log in first!");
+        return;
+      }
+      setError("");
+      // If we have an S3 key from earlier file-select upload, just submit metadata
+      if (imageKey) {
+        await axios.post(
+          "/api/products",
+          {
+            name: product.name,
+            price: product.price,
+            description: product.description,
+            quantity: product.quantity || 1,
+            category: product.category || "",
+            image_key: imageKey,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // Fallback: original backend upload via multipart/form-data (in case direct upload failed earlier)
+        const formData = new FormData();
+        formData.append("name", product.name);
+        formData.append("price", product.price);
+        formData.append("description", product.description);
+        formData.append("quantity", product.quantity || 1);
+        formData.append("category", product.category || "");
+        if (product.image) formData.append("image", product.image);
 
-      // Upload image
-      const uploadRes = await axios.post("http://localhost:5000/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      // Submit product data with uploaded image URL
-      await axios.post("http://localhost:5000/products", {
-        ...product,
-        imageUrl: uploadRes.data.imageUrl,
-      });
+        await axios.post("/api/products", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
 
       alert("Product added successfully!");
       router.push("/farmer-dashboard");
@@ -61,8 +146,12 @@ export default function AddProduct() {
         {/* File Upload for Image */}
         <input type="file" accept="image/*" onChange={handleFileChange} required style={styles.input} />
         {imagePreview && <img src={imagePreview} alt="Preview" style={styles.preview} />}
-
-        <button type="submit" style={styles.button}>Add Product</button>
+        {uploading && (
+          <div style={styles.progressWrap}>
+            <div style={{ ...styles.progressBar, width: `${progress}%` }} />
+          </div>
+        )}
+        <button type="submit" style={styles.button} disabled={uploading}>{uploading ? "Uploading..." : "Add Product"}</button>
       </form>
     </div>
   );
@@ -75,4 +164,6 @@ const styles = {
   input: { padding: "10px", border: "1px solid #ccc", borderRadius: "5px" },
   button: { padding: "10px", backgroundColor: "#28a745", color: "#fff", border: "none", borderRadius: "5px" },
   preview: { width: "100px", height: "100px", objectFit: "cover", marginTop: "10px" },
+  progressWrap: { width: "100%", height: 6, background: "#eee", borderRadius: 4 },
+  progressBar: { height: 6, background: "#28a745", borderRadius: 4, transition: "width .3s ease" },
 };

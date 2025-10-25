@@ -1,8 +1,8 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS agri_ecommerce;
-USE agri_ecommerce;
+CREATE DATABASE IF NOT EXISTS agrilink;
+USE agrilink;
 
---- Create 'users' table
+-- Create 'users' table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

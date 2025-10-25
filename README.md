@@ -1,3 +1,71 @@
+# AgriLink
+
+## Deploying to AWS EC2 (Ubuntu)
+
+This app has a Next.js frontend and an Express + MySQL backend. The backend listens on PORT (default 5000); the frontend is served by Next.js on port 3000. Next rewrites proxy /api/* and /uploads/* to the backend.
+
+### 1) Provision EC2
+- Ubuntu 22.04 or Amazon Linux 2023
+- Inbound security group: TCP 22 (SSH), 80 (HTTP), 443 (HTTPS)
+
+### 2) Install runtime
+```
+sudo apt-get update -y
+sudo apt-get install -y nginx mysql-client
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo npm i -g pm2
+```
+
+### 3) Clone and configure
+```
+git clone <your-repo-url> /var/www/agrilink
+cd /var/www/agrilink
+cp .env.example .env
+# edit .env to point to your RDS/DB and SECRET_KEY
+pnpm i || npm i
+```
+
+### 4) Build Next and start services with PM2
+```
+npm run build
+pm2 start ecosystem.config.js
+pm2 save
+```
+
+### 5) Nginx reverse proxy to Next.js (port 3000)
+Create /etc/nginx/sites-available/agrilink and symlink to sites-enabled.
+
+```
+server {
+	listen 80;
+	server_name _;
+	client_max_body_size 20m;
+
+	location / {
+		proxy_pass http://127.0.0.1:3000;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_set_header Host $host;
+		proxy_cache_bypass $http_upgrade;
+	}
+}
+```
+
+```
+sudo ln -s /etc/nginx/sites-available/agrilink /etc/nginx/sites-enabled/agrilink
+sudo nginx -t && sudo systemctl restart nginx
+```
+
+The backend is proxied by Next.js rewrites at /api/* and /uploads/*.
+
+### Database
+Use the schema in schema.sql to initialize your MySQL (RDS/Aurora/MySQL on EC2). Ensure your DB security group allows the EC2 instance to connect.
+
+### Environment
+See .env.example for required variables.
+
 
 # AgriLink  
 Agri E-Commerce  

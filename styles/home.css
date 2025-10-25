@@ -7,6 +7,17 @@
   padding: 20px;
 }
 
+/* Top CTA bar */
+.cta-bar {
+  background: #0f5132;
+  color: #d1fae5;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
 /* Hero Section */
 .hero {
   text-align: center;
@@ -16,6 +27,17 @@
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+.hero .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.35));
+  border-radius: 10px;
+}
+
+.hero { position: relative; overflow: hidden; }
+.hero .brand { color: #d1fae5; }
+.hero .hero-sub { max-width: 720px; margin: 0 auto 20px; }
 
 .hero h1 {
   font-size: 3rem;
@@ -62,20 +84,25 @@
 }
 
 .product-card {
-  background: #bf0101;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: 0.3s ease-in-out;
-  font-size: 1.5rem;
-  width: 150px;
-  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 0;
+  border-radius: 12px;
+  width: 220px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow .2s ease, transform .2s ease;
 }
-
-.product-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
+.product-card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
+.product-thumb { aspect-ratio: 4 / 3; background: #f3f4f6; display:grid; place-items:center; }
+.product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.product-meta { padding: 12px; }
+.product-name { font-size: 1rem; margin: 0 0 6px; }
+.product-row { display:flex; align-items:center; justify-content:space-between; }
+.product-price { font-weight: 700; color:#166534; }
+.ghost-btn { background: transparent; border:1px solid #d1d5db; padding:6px 10px; border-radius:8px; }
+.outline-btn { background: transparent; border: 2px solid #166534; color:#166534; padding:10px 16px; border-radius:10px; }
+.center { text-align:center; margin-top: 16px; }
 
 /* Farmers Section */
 .farmers {
@@ -148,3 +175,13 @@
   font-weight: bold;
   color: #555;
 }
+
+/* Categories chips */
+.categories { margin-top: 28px; }
+.section-subtitle { color:#065f46; text-align:center; margin-bottom:10px; }
+.chip-row { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.chip { background:#ecfdf5; border:1px solid #a7f3d0; color:#065f46; padding:8px 12px; border-radius:999px; cursor:pointer; }
+
+/* Utilities */
+.loader { text-align:center; color:#6b7280; }
+.no-products { text-align:center; color:#6b7280; }

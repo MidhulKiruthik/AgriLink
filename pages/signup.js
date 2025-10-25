@@ -55,7 +55,7 @@ export default function Signup() {
     }
   
     try {
-      await axios.post("http://localhost:5000/signup", formData);
+  await axios.post("/api/signup", formData);
       alert("Signup successful! Redirecting...");
   
       if (formData.role === "farmer") {

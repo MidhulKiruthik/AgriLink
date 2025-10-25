@@ -13,7 +13,7 @@ export default function Login() {
     setError(""); // Clear previous errors
 
     try {
-      const res = await axios.post("http://localhost:5000/login", { email, password });
+  const res = await axios.post("/api/login", { email, password });
 
       // Store token and farmer_id in localStorage
       localStorage.setItem("token", res.data.token); // Store token

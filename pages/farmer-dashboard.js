@@ -60,7 +60,7 @@ export default function FarmerDashboard() {
       formData.append("image", product.image);
       formData.append("farmer_id", farmerId);
 
-      await axios.post("http://localhost:5000/products", formData, {
+      await axios.post("/api/products", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

@@ -23,7 +23,7 @@ export default function Profile() {
         return;
       }
 
-      const res = await axios.get("http://localhost:5000/profile", {
+      const res = await axios.get("/api/profile", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setUser(res.data.user);
