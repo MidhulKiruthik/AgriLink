@@ -25,3 +25,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# secrets, certs, and archives (do NOT commit private keys)
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+*.tgz
+*.tar.gz
+*.zip
