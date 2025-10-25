@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 import Layout from "../../components/Layout";
+import { resolveImageSrc } from "../../utils/image";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -87,26 +88,7 @@ export default function Products() {
                   onClick={() => router.push(`/products/${product.id}`)}
                 >
                   <img
-                    src={(function(){
-                      if (!product.image_url) return '/uploads/placeholder-product.jpg';
-                      if (product.image_url.startsWith('http')) return product.image_url;
-                      if (product.image_url.startsWith('/uploads')) {
-                        const cdn = process.env.NEXT_PUBLIC_CDN_URL;
-                        const bucket = process.env.NEXT_PUBLIC_S3_BUCKET;
-                        const region = process.env.NEXT_PUBLIC_S3_REGION || 'eu-north-1';
-                        if (cdn) return `${cdn}${product.image_url}`; // includes leading slash
-                        if (bucket) return `https://${bucket}.s3.${region}.amazonaws.com${product.image_url}`;
-                        return product.image_url; // local dev fallback
-                      }
-                      if (product.image_url.startsWith('uploads/')) {
-                        const cdn = process.env.NEXT_PUBLIC_CDN_URL;
-                        const bucket = process.env.NEXT_PUBLIC_S3_BUCKET;
-                        const region = process.env.NEXT_PUBLIC_S3_REGION || 'eu-north-1';
-                        if (cdn) return `${cdn}/${product.image_url}`;
-                        if (bucket) return `https://${bucket}.s3.${region}.amazonaws.com/${product.image_url}`;
-                      }
-                      return `/uploads/${product.image_url}`;
-                    })()}
+                    src={resolveImageSrc(product.image_url)}
                     alt={product.name}
                     className="product-image"
                     onError={(e) => { e.currentTarget.src = '/uploads/placeholder-product.jpg'; }}

@@ -109,44 +109,28 @@ export default function FarmerDashboard() {
     }
     try {
       setError("");
-      // If we have an S3 key from earlier file-select upload, just submit metadata
-      if (imageKey) {
-        await axios.post(
-          "/api/products",
-          {
-            name: product.name,
-            price: product.price,
-            description: product.description,
-            quantity: product.quantity,
-            category: product.category,
-            image_key: imageKey,
-            farmer_id: farmerId,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        // Fallback: original backend upload via multipart/form-data (in case direct upload failed earlier)
-        const formData = new FormData();
-        formData.append("name", product.name);
-        formData.append("description", product.description);
-        formData.append("price", product.price);
-        formData.append("quantity", product.quantity);
-        formData.append("category", product.category);
-        if (product.image) formData.append("image", product.image);
-        formData.append("farmer_id", farmerId);
-
-        await axios.post("/api/products", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      if (!imageKey) {
+        setError("Image upload to S3 not completed. Please select an image and wait for upload to finish.");
+        return;
       }
+      await axios.post(
+        "/api/products",
+        {
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          quantity: product.quantity,
+          category: product.category,
+          image_key: imageKey,
+          farmer_id: farmerId,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       alert("Product added successfully!");
       router.push("/farmer-dashboard");
     } catch (err) {
-      setError("Join us to sell Products!");
+      setError(err?.response?.data?.message || err?.message || "Failed to add product.");
     }
   };
 
