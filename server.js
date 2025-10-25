@@ -218,7 +218,7 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
         return res.status(403).json({ message: "Access denied! Admin or Farmer only." });
     }
 
-    const { farmer_id, name, description, price, quantity, category } = req.body;
+    const { farmer_id: farmerIdFromBody, name, description, price, quantity, category } = req.body;
     // Prefer image_key (S3 object key), then explicit image_url (S3/CDN URL), else fallback to uploaded file path
     let image_url = null;
     if (req.body && typeof req.body.image_key === "string" && req.body.image_key.trim() !== "") {
@@ -233,15 +233,47 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
         return res.status(400).json({ message: "Name, price, and quantity are required!" });
     }
     console.log("Image URL:", image_url);
-    db.query(
-        "INSERT INTO products (farmer_id, name, description, price, quantity, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [farmer_id || null, name, description, price, quantity, category, image_url],
-        (err, result) => {
-            if (err) {
-                console.error("Database Error:", err);
-                return res.status(500).json({ error: err });
+
+    // Resolve farmer_id based on role
+    const useInsert = (resolvedFarmerId) => {
+        db.query(
+            "INSERT INTO products (farmer_id, name, description, price, quantity, category, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [resolvedFarmerId, name, description, price, quantity, category, image_url],
+            (err, result) => {
+                if (err) {
+                    console.error("Database Error:", err);
+                    return res.status(500).json({ error: "Database error while adding product" });
+                }
+                res.status(201).json({ message: "Product added successfully!", image_url });
             }
-            res.status(201).json({ message: "Product added successfully!", image_url });
+        );
+    };
+
+    if (req.user.role === "admin") {
+        // Admin can specify farmer_id explicitly; if not provided, reject
+        const parsed = farmerIdFromBody ? Number(farmerIdFromBody) : NaN;
+        if (!parsed || Number.isNaN(parsed)) {
+            return res.status(400).json({ message: "farmer_id is required when adding a product as admin" });
+        }
+        return useInsert(parsed);
+    }
+
+    // For farmer role: map user -> farmers.id
+    const farmerUserId = req.user.id;
+    db.query(
+        "SELECT id FROM farmers WHERE user_id = ? LIMIT 1",
+        [farmerUserId],
+        (err, rows) => {
+            if (err) {
+                console.error("Farmer lookup error:", err);
+                return res.status(500).json({ message: "Failed to resolve farmer profile" });
+            }
+            if (!rows || rows.length === 0) {
+                return res.status(400).json({ message: "Farmer profile not found for this user" });
+            }
+            const resolvedId = rows[0].id;
+            console.log("Resolved farmer_id:", resolvedId);
+            useInsert(resolvedId);
         }
     );
 });
@@ -403,6 +435,10 @@ app.put("/products/:id", authenticateToken, (req, res) => {
     }
 
     const { id } = req.params;
+// ✅ Health endpoint for load balancers/monitors
+app.get("/healthz", (req, res) => {
+    res.status(200).json({ ok: true });
+});
     const { name, description, price, quantity, image_url } = req.body; // ✅ Changed 'stock' to 'quantity'
 
     db.query(
@@ -432,6 +468,12 @@ app.delete("/products/:id", authenticateToken, (req, res) => {
         }
         res.json({ message: "Product deleted successfully!" });
     });
+});
+
+// ✅ Health endpoint for load balancers/monitors
+app.get("/healthz", (req, res) => {
+    // Optionally add lightweight DB/S3 checks in the future
+    res.status(200).json({ ok: true });
 });
 
 // ✅ Start Server
@@ -597,6 +639,32 @@ app.get("/admin/orders", authenticateToken, (req, res) => {
         (err, results) => {
             if (err) return res.status(500).json({ error: err });
             res.json(results);
+        }
+    );
+});
+
+// Admin: Update any order status
+app.put("/admin/orders/:id/status", authenticateToken, (req, res) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access denied! Admin only." });
+    }
+
+    const { id } = req.params;
+    const { status } = req.body;
+    const validStatuses = ["Pending", "Shipped", "Delivered", "Cancelled", "Paid"]; // includes Paid per seed
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status value!" });
+    }
+
+    db.query(
+        "UPDATE orders SET status = ? WHERE id = ?",
+        [status, id],
+        (err, result) => {
+            if (err) return res.status(500).json({ error: "Database error!" });
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: "Order not found!" });
+            }
+            return res.status(200).json({ message: `Order status updated to ${status}.` });
         }
     );
 });
