@@ -304,13 +304,33 @@ const s3UploadsProxy = async (req, res, next) => {
         if (!remainder) {
             remainder = req.path.replace(/^\/+/, "").replace(/^uploads\/?/, "");
         }
-        const key = `uploads/${remainder}`;
-        if (!key.startsWith("uploads/") || key === 'uploads/') return next();
+        // Primary key attempts:
+        // 1) uploads/<remainder>
+        // 2) <remainder> (fallback for legacy objects uploaded at bucket root)
+        const primaryKey = `uploads/${remainder}`;
+        const fallbackKey = remainder; // legacy root placement
+        const keysToTry = [];
+        if (primaryKey.startsWith("uploads/") && primaryKey !== 'uploads/') keysToTry.push(primaryKey);
+        if (fallbackKey && fallbackKey !== primaryKey) keysToTry.push(fallbackKey);
+        if (keysToTry.length === 0) return next();
 
-        // For HEAD requests, fetch only headers
+        // For HEAD requests, fetch only headers — try keys in order
         if (req.method === 'HEAD' && HeadObjectCommand) {
+            let head = null;
+            let usedKey = null;
+            for (const k of keysToTry) {
+                try {
+                    head = await s3.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: k }));
+                    usedKey = k; break;
+                } catch (e) {
+                    if (e && (e.name === 'NoSuchKey' || e.$metadata?.httpStatusCode === 404)) continue;
+                    // Non-404: break and return 404 to avoid leaking errors
+                    throw e;
+                }
+            }
+            if (!head) return next();
             res.set("X-Source", "s3-proxy");
-            const head = await s3.send(new HeadObjectCommand({ Bucket: S3_BUCKET, Key: key }));
+            res.set("X-Source-Key", usedKey);
             if (head.ContentType) res.set("Content-Type", head.ContentType);
             res.set("Cache-Control", head.CacheControl || ASSET_CACHE_CONTROL);
             if (head.ETag) res.set("ETag", String(head.ETag).replace(/\"/g, ""));
@@ -320,10 +340,23 @@ const s3UploadsProxy = async (req, res, next) => {
             return res.status(200).end();
         }
 
-        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: key });
-        const data = await s3.send(cmd);
+        // GET object — try keys in order
+        let data = null;
+        let usedKey = null;
+        for (const k of keysToTry) {
+            try {
+                const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: k });
+                data = await s3.send(cmd);
+                usedKey = k; break;
+            } catch (e) {
+                if (e && (e.name === 'NoSuchKey' || e.$metadata?.httpStatusCode === 404)) continue;
+                throw e;
+            }
+        }
+        if (!data) return next();
 
     res.set("X-Source", "s3-proxy");
+        if (usedKey) res.set("X-Source-Key", usedKey);
         if (data.ContentType) res.set("Content-Type", data.ContentType);
         res.set("Cache-Control", data.CacheControl || ASSET_CACHE_CONTROL);
         if (data.ETag) res.set("ETag", String(data.ETag).replace(/\"/g, ""));

@@ -113,7 +113,11 @@ export default function Home() {
                 return (
                   <motion.div key={p.id} className="product-card" whileHover={{ y: -4 }} onClick={()=>router.push(`/products/${p.id}`)}>
                     <div className="product-thumb">
-                      <img src={img} alt={p.name} />
+                      <img 
+                        src={img} 
+                        alt={p.name} 
+                        onError={(e) => { e.currentTarget.src = '/uploads/placeholder-product.jpg'; }}
+                      />
                     </div>
                     <div className="product-meta">
                       <h4 className="product-name">{p.name}</h4>

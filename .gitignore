@@ -35,3 +35,6 @@ next-env.d.ts
 *.tgz
 *.tar.gz
 *.zip
+
+# local uploads (use S3 instead; don't commit)
+/uploads/

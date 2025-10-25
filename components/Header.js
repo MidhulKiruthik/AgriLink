@@ -11,6 +11,7 @@ export default function Header() {
         <Link href="/orders">My Orders</Link>
         <Link href="/farmer-dashboard">Sell</Link>
         <Link href="/profile">Profile</Link>
+        <Link href="/admin-dashboard">Admin</Link>
     
     
       </nav>

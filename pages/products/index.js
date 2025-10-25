@@ -109,6 +109,7 @@ export default function Products() {
                     })()}
                     alt={product.name}
                     className="product-image"
+                    onError={(e) => { e.currentTarget.src = '/uploads/placeholder-product.jpg'; }}
                   />
                   <div className="product-info">
                     <h3 className="product-name">{product.name}</h3>
