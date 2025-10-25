@@ -255,8 +255,9 @@ const s3UploadsProxy = async (req, res, next) => {
             return next();
         }
         // Normalize key from path: '/uploads/foo.jpg' -> 'uploads/foo.jpg'
-        const key = req.path.replace(/^\/+/, "");
-        if (!key.startsWith("uploads/")) return next();
+        const remainder = (req.params && req.params.path) ? String(req.params.path) : req.path.replace(/^\/+/, "").replace(/^uploads\/?/, "");
+        const key = `uploads/${remainder}`;
+        if (!key.startsWith("uploads/") || key === 'uploads/') return next();
 
         // For HEAD requests, fetch only headers
         if (req.method === 'HEAD' && HeadObjectCommand) {
@@ -299,8 +300,9 @@ const s3UploadsProxy = async (req, res, next) => {
     }
 };
 
-app.get("/uploads/*", s3UploadsProxy);
-app.head("/uploads/*", s3UploadsProxy);
+// Express 5 + path-to-regexp v8: use named star param instead of wildcard
+app.get("/uploads/:path(*)", s3UploadsProxy);
+app.head("/uploads/:path(*)", s3UploadsProxy);
 
 // Mark static responses for debugging (runs only if proxy called next())
 app.use("/uploads", (req, res, next) => { res.set("X-Source", "static"); next(); });
