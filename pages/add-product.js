@@ -95,42 +95,28 @@ export default function AddProduct() {
         return;
       }
       setError("");
-      // If we have an S3 key from earlier file-select upload, just submit metadata
-      if (imageKey) {
-        await axios.post(
-          "/api/products",
-          {
-            name: product.name,
-            price: product.price,
-            description: product.description,
-            quantity: product.quantity || 1,
-            category: product.category || "",
-            image_key: imageKey,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } else {
-        // Fallback: original backend upload via multipart/form-data (in case direct upload failed earlier)
-        const formData = new FormData();
-        formData.append("name", product.name);
-        formData.append("price", product.price);
-        formData.append("description", product.description);
-        formData.append("quantity", product.quantity || 1);
-        formData.append("category", product.category || "");
-        if (product.image) formData.append("image", product.image);
-
-        await axios.post("/api/products", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      // Require S3 upload to be completed
+      if (!imageKey) {
+        setError("Image upload to S3 not completed. Please select an image and wait for the upload to finish.");
+        return;
       }
+      await axios.post(
+        "/api/products",
+        {
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          quantity: product.quantity || 1,
+          category: product.category || "",
+          image_key: imageKey,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       alert("Product added successfully!");
       router.push("/farmer-dashboard");
     } catch (err) {
-      setError("Failed to add product.");
+      setError(err?.response?.data?.message || err?.message || "Failed to add product.");
     }
   };
 
