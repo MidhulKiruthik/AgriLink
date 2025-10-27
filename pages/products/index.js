@@ -11,12 +11,8 @@ export default function Products() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/login");
-    } else {
-      fetchProducts();
-    }
+    // Products page is public; fetch without requiring login
+    fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
@@ -37,9 +33,7 @@ export default function Products() {
 
     try {
       setLoading(true);
-      const res = await axios.get(`/api/search?q=${encodeURIComponent(search)}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await axios.get(`/api/search?q=${encodeURIComponent(search)}`);
       setProducts(res.data);
     } catch (error) {
       console.error("Error fetching search results:", error);

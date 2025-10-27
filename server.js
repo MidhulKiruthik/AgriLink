@@ -194,13 +194,15 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+// Only create local uploads directory when not using S3
+if (!USE_S3) {
+    const uploadsDir = path.join(__dirname, "uploads");
+    if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+    }
 }
 
-// Configure multer for file storage
+// Configure multer for file storage (used only when USE_S3=false)
 const storage = multer.diskStorage({
     destination: "uploads/", // Images will be saved in 'uploads' folder
     filename: (req, file, cb) => {
@@ -208,9 +210,12 @@ const storage = multer.diskStorage({
     },
 });
 const upload = multer({ storage });
-app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
+// Conditionally apply multer; skip when using S3 so we don't save local files
+const productsUploadMiddleware = USE_S3 ? (req, res, next) => next() : upload.single("image");
+
+app.post("/products", authenticateToken, productsUploadMiddleware, (req, res) => {
     console.log("Incoming request:", req.body);
-    console.log("Uploaded file:", req.file);
+    if (req.file) console.log("Uploaded file:", req.file);
     console.log("User Role:", req.user.role);
 
     if (req.user.role !== "admin" && req.user.role !== "farmer") {
@@ -277,6 +282,27 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
         [farmerUserId],
         (err, rows) => {
             if (err) {
+                // Fallback if 'user_id' column is missing in farmers table
+                if (err.code === 'ER_BAD_FIELD_ERROR') {
+                    console.warn("farmers.user_id missing; falling back to email join");
+                    const email = req.user.email;
+                    return db.query(
+                        "SELECT id FROM farmers WHERE email = ? LIMIT 1",
+                        [email],
+                        (err2, rows2) => {
+                            if (err2) {
+                                console.error("Farmer lookup fallback error:", err2);
+                                return res.status(500).json({ message: "Failed to resolve farmer profile" });
+                            }
+                            if (!rows2 || rows2.length === 0) {
+                                return res.status(400).json({ message: "Farmer profile not found for this user" });
+                            }
+                            const resolvedId = rows2[0].id;
+                            console.log("Resolved farmer_id (fallback):", resolvedId);
+                            return useInsert(resolvedId);
+                        }
+                    );
+                }
                 console.error("Farmer lookup error:", err);
                 return res.status(500).json({ message: "Failed to resolve farmer profile" });
             }
