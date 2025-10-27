@@ -217,6 +217,19 @@ app.post("/products", authenticateToken, upload.single("image"), (req, res) => {
         return res.status(403).json({ message: "Access denied! Admin or Farmer only." });
     }
 
+    // When S3 uploads are enabled, do not accept direct multipart uploads.
+    // Enforce client to upload to S3 first and send image_key only.
+    if (USE_S3) {
+        const key = (req.body && typeof req.body.image_key === "string") ? req.body.image_key.trim() : "";
+        if (!key) {
+            // Clean up any temp file saved by multer to avoid orphan files
+            try { if (req.file && req.file.path) require("fs").unlinkSync(req.file.path); } catch (e) {}
+            return res.status(400).json({
+                message: "Image must be uploaded to S3 first. Please select an image, wait for upload to finish, then submit.",
+            });
+        }
+    }
+
     const { farmer_id: farmerIdFromBody, name, description, price, quantity, category } = req.body;
     // Prefer image_key (S3 object key), then explicit image_url (S3/CDN URL), else fallback to uploaded file path
     let image_url = null;
