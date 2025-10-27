@@ -63,6 +63,46 @@ async function main() {
       console.log('Index already exists: uniq_cart_user_product');
     }
 
+    // Add farmers.user_id and backfill from users by email/id
+    try {
+      // Add column if missing
+      await conn.query('ALTER TABLE farmers ADD COLUMN user_id INT NULL');
+      console.log('Migrated: farmers.user_id added');
+    } catch (e) {
+      if (e && e.code === 'ER_DUP_FIELDNAME') {
+        console.log('Column exists: farmers.user_id');
+      } else if (e) {
+        console.log('Skip/Note:', e.message);
+      }
+    }
+    try {
+      // Backfill via email match first
+      await conn.query(
+        'UPDATE farmers f JOIN users u ON f.email = u.email SET f.user_id = u.id WHERE f.user_id IS NULL'
+      );
+      // Backfill via id==id for existing seeded pairs
+      await conn.query(
+        'UPDATE farmers f JOIN users u ON f.id = u.id AND u.role = "farmer" SET f.user_id = u.id WHERE f.user_id IS NULL'
+      );
+      console.log('Backfilled farmers.user_id where possible');
+    } catch (e) {
+      console.log('Backfill note:', e.message);
+    }
+    try {
+      // Add FK if not exists
+      const [fkRows] = await conn.query(
+        "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME='farmers' AND COLUMN_NAME='user_id' AND REFERENCED_TABLE_NAME='users'"
+      );
+      if (fkRows.length === 0) {
+        await conn.query('ALTER TABLE farmers ADD CONSTRAINT fk_farmers_user_id FOREIGN KEY (user_id) REFERENCES users(id)');
+        console.log('Added FK: farmers.user_id -> users.id');
+      } else {
+        console.log('FK already exists for farmers.user_id');
+      }
+    } catch (e) {
+      console.log('FK note:', e.message);
+    }
+
     // --- Seed Users ---
     const seedUsers = [
       {

@@ -63,6 +63,14 @@ The backend is proxied by Next.js rewrites at /api/* and /uploads/*.
 ### Database
 Use the schema in schema.sql to initialize your MySQL (RDS/Aurora/MySQL on EC2). Ensure your DB security group allows the EC2 instance to connect.
 
+Migration note: If you see ER_BAD_FIELD_ERROR about farmers.user_id
+- The backend maps an authenticated farmer user to their farmer profile via farmers.user_id.
+- If your database was created before this column existed, run either:
+	- node scripts/migrate_farmers_user_id.js (preferred), or
+	- Manually apply: ALTER TABLE farmers ADD COLUMN user_id INT NULL; then backfill with UPDATE farmers f JOIN users u ON f.email=u.email SET f.user_id=u.id WHERE f.user_id IS NULL;
+	- Optionally add foreign key: ALTER TABLE farmers ADD CONSTRAINT fk_farmers_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+This is idempotent in the provided migration script.
+
 ### Environment
 See .env.example for required variables.
 

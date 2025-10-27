@@ -19,7 +19,10 @@ CREATE TABLE farmers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    phone VARCHAR(15) NOT NULL
+    phone VARCHAR(15) NOT NULL,
+    -- Optional link to users table (added to support lookups by authenticated user)
+    user_id INT NULL,
+    CONSTRAINT fk_farmers_user_id FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Create 'products' table
