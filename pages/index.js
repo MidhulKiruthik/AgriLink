@@ -132,9 +132,7 @@ export default function Home() {
             )}
           </div>
         )}
-        <div className="center">
-          <button className="outline-btn" onClick={()=>router.push('/products')}>Browse All Products</button>
-        </div>
+        {/* Removed "Browse All Products" button per request. Users can use the Shop Now button above. */}
       </motion.section>
 
       {/* Farmers Section */}

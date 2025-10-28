@@ -30,6 +30,16 @@ export default function FarmerDashboard() {
         // farmerId is optional; server derives it from JWT for farmer role
         const fId = localStorage.getItem("farmer_id");
         if (fId) setFarmerId(fId);
+        // Verify role for clearer UX: show guidance if logged in as customer
+        axios
+          .get("/api/profile", { headers: { Authorization: `Bearer ${token}` } })
+          .then((res) => {
+            const role = res?.data?.user?.role;
+            if (role !== "farmer" && role !== "admin") {
+              setError("You are logged in as a customer. Please create a farmer account to sell products.");
+            }
+          })
+          .catch(() => {/* ignore */});
       }
     }
   }, [router]);
@@ -198,9 +208,11 @@ export default function FarmerDashboard() {
         <button type="button" onClick={() => router.push("/products")} style={styles.viewButton}>
           View Products
         </button>
-        <button onClick={() => router.push("/signup")} style={styles.viewButton}>
-          Join us
-        </button>
+        {error && error.includes("customer") && (
+          <button type="button" onClick={() => router.push("/signup")} style={styles.viewButton}>
+            Create a farmer account
+          </button>
+        )}
       </form>
     </div>
   );
