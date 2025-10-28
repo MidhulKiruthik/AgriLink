@@ -78,7 +78,8 @@ export default function AddProduct() {
       setImageKey(key); // store S3 object key for submit
     } catch (err) {
       console.error(err);
-      setError(err?.message || "Failed to upload image to S3.");
+      const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
+      setError(serverMsg || err?.message || "Failed to upload image to S3.");
       setImageKey(null);
     } finally {
       setUploading(false);
@@ -137,7 +138,17 @@ export default function AddProduct() {
             <div style={{ ...styles.progressBar, width: `${progress}%` }} />
           </div>
         )}
-        <button type="submit" style={styles.button} disabled={uploading}>{uploading ? "Uploading..." : "Add Product"}</button>
+        <button
+          type="submit"
+          style={{
+            ...styles.button,
+            backgroundColor: uploading || !imageKey ? "#8abf93" : styles.button.backgroundColor,
+            cursor: uploading || !imageKey ? "not-allowed" : styles.button.cursor,
+          }}
+          disabled={uploading || !imageKey}
+        >
+          {uploading ? "Uploading..." : (!imageKey ? "Upload image first" : "Add Product")}
+        </button>
       </form>
     </div>
   );

@@ -104,7 +104,8 @@ export default function FarmerDashboard() {
       setProgress(100);
       setImageKey(key); // store S3 object key for submit
     } catch (err) {
-      setError(err?.message || "Failed to upload image to S3.");
+      const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
+      setError(serverMsg || err?.message || "Failed to upload image to S3.");
       setImageKey(null);
     } finally {
       setUploading(false);
@@ -204,7 +205,17 @@ export default function FarmerDashboard() {
             <div style={{ height: 6, background: "#28a745", borderRadius: 4, width: `${progress}%`, transition: "width .3s ease" }} />
           </div>
         )}
-        <button type="submit" style={styles.button} disabled={uploading}>{uploading ? "Uploading..." : "Add Product"}</button>
+        <button
+          type="submit"
+          style={{
+            ...styles.button,
+            backgroundColor: uploading || !imageKey ? "#8abf93" : styles.button.backgroundColor,
+            cursor: uploading || !imageKey ? "not-allowed" : styles.button.cursor,
+          }}
+          disabled={uploading || !imageKey}
+        >
+          {uploading ? "Uploading..." : (!imageKey ? "Upload image first" : "Add Product")}
+        </button>
         <button type="button" onClick={() => router.push("/products")} style={styles.viewButton}>
           View Products
         </button>
