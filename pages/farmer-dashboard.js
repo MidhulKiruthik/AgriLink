@@ -13,21 +13,23 @@ export default function FarmerDashboard() {
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState("");
+  // No need to store farmerId on client; backend resolves farmer_id from JWT for farmer role
   const [farmerId, setFarmerId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [imageKey, setImageKey] = useState(null); // S3 object key
   const router = useRouter();
 
-  // Check if token and farmer_id exist; if not, redirect to login
+  // Check if token exists; if not, redirect to login (farmer_id not required client-side)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
-      const fId = localStorage.getItem("farmer_id");
-      if (!token || !fId) {
+      if (!token) {
         router.push("/login");
       } else {
-        setFarmerId(fId);
+        // farmerId is optional; server derives it from JWT for farmer role
+        const fId = localStorage.getItem("farmer_id");
+        if (fId) setFarmerId(fId);
       }
     }
   }, [router]);
@@ -122,7 +124,6 @@ export default function FarmerDashboard() {
           quantity: product.quantity,
           category: product.category,
           image_key: imageKey,
-          farmer_id: farmerId,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
