@@ -81,7 +81,7 @@ export default function Home() {
           transition={{ duration: 1 }}
         >
           <img
-            src="/images/farmers-market.jpg"
+            src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1200&auto=format&fit=crop"
             alt="Farmers Market"
             className="rounded-2xl shadow-lg w-full max-w-md"
           />
@@ -93,27 +93,65 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-green-800 mb-6">Featured Products</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {featured.map((product) => (
-              <div
+              <motion.div
                 key={product.id}
-                className="bg-white shadow-md rounded-xl p-4 hover:shadow-lg transition"
+                className="bg-white shadow-md rounded-xl p-4 hover:shadow-lg transition relative"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
                 <img
                   src={resolveImageSrc(product.image)}
                   alt={product.name}
                   className="rounded-lg w-full h-48 object-cover mb-4"
-                  onError={(e) => (e.currentTarget.src = "/images/placeholder.jpg")}
+                  onError={(e) => (e.currentTarget.src = "https://images.unsplash.com/photo-1602524814900-1f05e9b2a9f8?q=80&w=800&auto=format&fit=crop")}
                 />
                 <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
                 <p className="text-green-700 font-bold mt-2">₹{product.price}</p>
-              </div>
+                <button
+                  className="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded-full text-sm hover:bg-green-700 transition"
+                  onClick={() => toast.success(`${product.name} added to wishlist!`)}
+                >
+                  ♥ Wishlist
+                </button>
+              </motion.div>
             ))}
           </div>
         </section>
       )}
 
       {!loading && featured.length === 0 && (
-        <p className="text-center text-gray-500">No featured products available.</p>
+        <motion.p
+          className="text-center text-gray-500"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          No featured products available.
+        </motion.p>
       )}
+
+      <section className="newsletter mt-16 px-8 py-12 bg-green-100 rounded-xl shadow-md">
+        <h2 className="text-3xl font-bold text-green-800 mb-4">Stay Updated</h2>
+        <p className="text-lg text-gray-700 mb-6">Subscribe to our newsletter for the latest updates and offers.</p>
+        <form className="flex flex-col md:flex-row gap-4">
+          <input
+            type="email"
+            placeholder="Enter your email"
+            className="flex-1 px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+          />
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-green-700 transition"
+            onClick={(e) => {
+              e.preventDefault();
+              toast.success("Subscribed successfully!");
+            }}
+          >
+            Subscribe
+          </button>
+        </form>
+      </section>
     </Layout>
   );
 }
