@@ -3,18 +3,20 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Layout from "../components/Layout";
+import { resolveImageSrc } from "../utils/image";
 
 export default function Home() {
   const router = useRouter();
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const handleShopNow = () => {
-    const token = localStorage.getItem("token");
+  const handleShopNow = async () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (token) {
-      router.push("/products");
+      // Optional: verify token client-side (expiry) or call a quick /auth/validate
+      await router.push("/products");
     } else {
-      router.push("/login");
+      await router.push("/login");
     }
   };
 
@@ -51,11 +53,7 @@ export default function Home() {
         <div className="hero-overlay" />
         <h1><span className="brand">AgriLink</span></h1>
         <p className="hero-sub">Your trusted marketplace for fresh & organic produce.</p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleShopNow}
-        >
+        <motion.button type="button" onClick={handleShopNow} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           Shop Now
         </motion.button>
         <div className="hero-badges">
@@ -74,66 +72,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* Featured Products Section */}
-      <motion.section
-        className="featured"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.5 }}
-      >
-        <h2>Featured Products</h2>
-        {loading ? (
-          <p className="loader">Loading fresh picks…</p>
-        ) : (
-          <div className="product-grid">
-            {featured.length === 0 ? (
-              <p className="no-products">No products yet. Check back soon!</p>
-            ) : (
-              featured.map((p) => {
-                let img = '/uploads/placeholder-product.jpg';
-                if (p?.image_url) {
-                  if (p.image_url.startsWith('http')) img = p.image_url;
-                  else if (p.image_url.startsWith('/uploads')) {
-                    const cdn = process.env.NEXT_PUBLIC_CDN_URL;
-                    const bucket = process.env.NEXT_PUBLIC_S3_BUCKET;
-                    const region = process.env.NEXT_PUBLIC_S3_REGION || 'eu-north-1';
-                    if (cdn) img = `${cdn}${p.image_url}`; // p.image_url includes leading slash
-                    else if (bucket) img = `https://${bucket}.s3.${region}.amazonaws.com${p.image_url}`;
-                    else img = p.image_url; // local dev fallback
-                  } else if (p.image_url.startsWith('uploads/')) {
-                    const cdn = process.env.NEXT_PUBLIC_CDN_URL;
-                    const bucket = process.env.NEXT_PUBLIC_S3_BUCKET;
-                    const region = process.env.NEXT_PUBLIC_S3_REGION || 'eu-north-1';
-                    if (cdn) img = `${cdn}/${p.image_url}`;
-                    else if (bucket) img = `https://${bucket}.s3.${region}.amazonaws.com/${p.image_url}`;
-                    else img = `/uploads/${p.image_url}`; // fallback for local dev
-                  } else img = `/uploads/${p.image_url}`;
-                }
-                return (
-                  <motion.div key={p.id} className="product-card" whileHover={{ y: -4 }} onClick={()=>router.push(`/products/${p.id}`)}>
-                    <div className="product-thumb">
-                      <img 
-                        src={img} 
-                        alt={p.name} 
-                        onError={(e) => { e.currentTarget.src = '/uploads/placeholder-product.jpg'; }}
-                      />
-                    </div>
-                    <div className="product-meta">
-                      <h4 className="product-name">{p.name}</h4>
-                      <div className="product-row">
-                        <span className="product-price">₹{p.price}</span>
-                        <button className="ghost-btn">View</button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
-        )}
-        {/* Removed "Browse All Products" button per request. Users can use the Shop Now button above. */}
-      </motion.section>
 
       {/* Farmers Section */}
       <motion.section
