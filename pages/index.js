@@ -5,6 +5,7 @@ import axios from "axios";
 import Layout from "../components/Layout";
 import { resolveImageSrc } from "../utils/image";
 import { toast } from "react-hot-toast";
+import "../agri-ecommerce/src/index.css";
 
 export default function Home() {
   const router = useRouter();
