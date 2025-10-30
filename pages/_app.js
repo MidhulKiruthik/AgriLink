@@ -4,6 +4,7 @@ import "../styles/footer.css";  // ✅ Import footer styles
 import "../styles/home.css";    // ✅ Import home page styles
 import "../styles/products.css"; // ✅ Import products page styles
 import "../styles/layout.css";
+import "../agri-ecommerce/src/index.css";
 
 
 export default function MyApp({ Component, pageProps }) {
