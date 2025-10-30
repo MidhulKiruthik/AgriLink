@@ -11,3 +11,186 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* layout container */
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #0f172a;
+}
+
+/* top CTA bar */
+.cta-bar {
+  background: #f1fdf6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: center;
+  color: #065f46;
+  font-weight: 600;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(2,6,23,0.04);
+}
+
+/* hero */
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ecfdf5 0%, #f0fdf4 100%);
+  box-shadow: 0 6px 30px rgba(2,6,23,0.06);
+}
+
+/* hero overlay if using image behind */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* hero text block */
+.brand {
+  color: #065f46;
+  display: inline-block;
+}
+
+.hero-sub {
+  color: #065f46;
+  margin-top: 8px;
+  font-size: 1.1rem;
+}
+
+/* hero-section wrapper for CTA and badges */
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+}
+
+/* Shop Now button (standalone CTA style) */
+.shop-now-btn {
+  cursor: pointer;
+  display: inline-block;
+  padding: 12px 28px;
+  background: #16a34a; /* green-600 */
+  color: #fff;
+  border-radius: 999px;
+  border: 0;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 6px 18px rgba(16,185,129,0.12);
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  transform-origin: center;
+}
+.shop-now-btn:hover { transform: translateY(-3px) scale(1.02); background: #15803d; }
+.shop-now-btn:active { transform: translateY(0) scale(0.98); }
+
+/* badges under CTA */
+.hero-badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  color: #065f46;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* hero image container (right side in original layout) */
+.hero-image img,
+.hero-image {
+  max-width: 420px;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+  object-fit: cover;
+  display: block;
+}
+
+/* featured product grid */
+.featured {
+  margin-top: 48px;
+}
+.featured .grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .featured .grid { grid-template-columns: repeat(1, 1fr); }
+}
+
+/* product card */
+.featured .bg-white {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  transition: box-shadow .18s ease, transform .18s ease;
+}
+.featured .bg-white:hover { box-shadow: 0 12px 30px rgba(2,6,23,0.08); transform: translateY(-6px); }
+.featured img { width: 100%; height: 190px; object-fit: cover; border-radius: 10px; }
+
+/* farmers / Become a Seller block */
+.farmers {
+  margin-top: 40px;
+  padding: 28px;
+  background: linear-gradient(180deg,#fefce8,#fff7ed);
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 8px 26px rgba(31,41,55,0.04);
+}
+.farmers h2 { font-size: 1.6rem; color: #92400e; margin-bottom: 8px; }
+.farmers p { color: #92400e; margin-bottom: 14px; }
+.farmers button {
+  cursor: pointer;
+  padding: 10px 20px;
+  background: #f59e0b; /* amber-500 */
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 0;
+  transition: transform .15s ease, background .15s ease;
+}
+.farmers button:hover { transform: translateY(-3px); background: #d97706; }
+
+/* testimonials */
+.testimonials { margin-top: 36px; display: grid; gap: 16px; }
+.testimonial-cards { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+.testimonial-card {
+  background: #f8fafc;
+  padding: 18px;
+  border-radius: 12px;
+  max-width: 420px;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.04);
+}
+
+/* newsletter */
+.newsletter { margin-top: 36px; padding: 20px; background: #ecfdf5; border-radius: 14px; }
+.newsletter input[type="email"] {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1fae5;
+  outline: none;
+  width: 100%;
+}
+.newsletter button { min-width: 120px; }
+
+/* small utility */
+.text-center { text-align: center; }
+.mt-16 { margin-top: 4rem; }
+
+/* ensure CTA and farmers are visible above hero overlay */
+.hero-section, .farmers, .testimonial-cards { z-index: 3; position: relative; }
