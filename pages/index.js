@@ -10,11 +10,8 @@ export default function Home() {
 
   const handleShopNow = () => {
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (token) {
-      router.push("/products");
-    } else {
-      router.push("/login");
-    }
+    if (token) router.push("/products");
+    else router.push("/login");
   };
 
   useEffect(() => {
@@ -41,47 +38,29 @@ export default function Home() {
           <span>Fresh from local farms • Secure payments • Fast delivery</span>
         </div>
 
-        <section className="hero">
-          <div className="hero-overlay" />
-          <h1><span className="brand">AgriLink</span></h1>
-          <p className="hero-sub">Your trusted marketplace for fresh & organic produce.</p>
-
-          <section className="hero-section">
-            <button
-              type="button"
-              onClick={handleShopNow}
-              className="shop-now-btn px-6 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 active:scale-95 transition-all duration-300"
-            >
-              Shop Now
-            </button>
-
-            <div className="hero-badges flex flex-wrap justify-center gap-3 mt-4 text-sm">
-              <span>✓ Farm-to-table</span>
-              <span>✓ Fair pricing</span>
-              <span>✓ Local sellers</span>
-            </div>
-          </section>
+        <section className="hero relative w-full h-[60vh] flex flex-col justify-center items-center bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.jpg')" }}>
+          <div className="hero-overlay absolute inset-0 bg-black/40"></div>
+          <h1 className="relative text-5xl font-bold text-white z-10">
+            <span className="brand text-green-400">AgriLink</span>
+          </h1>
+          <p className="hero-sub relative text-lg text-white mt-2 z-10">
+            Your trusted marketplace for fresh & organic produce.
+          </p>
         </section>
 
-        <section className="categories">
-          <h3 className="section-subtitle">Browse by Category</h3>
-          <div className="chip-row">
-            {["Fruits", "Vegetables", "Leafy Greens", "Cereals", "Dairy"].map((c) => (
-              <button
-                key={c}
-                type="button"
-                className="chip"
-                onClick={() => router.push("/products")}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </section>
+        <div className="flex justify-center my-8">
+          <button
+            type="button"
+            onClick={handleShopNow}
+            className="shop-now-btn px-8 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 active:scale-95 transition-all duration-300"
+          >
+            Shop Now
+          </button>
+        </div>
 
-        <section className="farmers">
-          <h2>Become a Seller</h2>
-          <p>Join AgriLink and start selling your fresh, organic produce to a wide audience.</p>
+        <section className="farmers text-center my-16">
+          <h2 className="text-2xl font-semibold mb-2">Become a Seller</h2>
+          <p className="mb-4">Join AgriLink and start selling your fresh, organic produce to a wide audience.</p>
           <button
             type="button"
             className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-full shadow-md hover:bg-amber-700 active:scale-95 transition-all duration-300"
@@ -91,16 +70,16 @@ export default function Home() {
           </button>
         </section>
 
-        <section className="testimonials">
-          <h2>What Our Customers Say</h2>
-          <div className="testimonial-cards">
-            <div className="testimonial-card">
-              <p>"Best platform! The produce is always fresh and delivered on time."</p>
-              <span>- Happy Customer</span>
+        <section className="testimonials text-center my-16">
+          <h2 className="text-2xl font-semibold mb-4">What Our Customers Say</h2>
+          <div className="testimonial-cards flex flex-col gap-6 items-center">
+            <div className="testimonial-card max-w-md bg-gray-100 p-4 rounded-lg shadow">
+              <p>"Great platform! The produce is always fresh and delivered on time."</p>
+              <span className="block mt-2 text-sm text-gray-600">- Happy Customer</span>
             </div>
-            <div className="testimonial-card">
+            <div className="testimonial-card max-w-md bg-gray-100 p-4 rounded-lg shadow">
               <p>"As a farmer, AgriLink has helped me reach a broader audience. Highly recommend!"</p>
-              <span>- Satisfied Farmer</span>
+              <span className="block mt-2 text-sm text-gray-600">- Satisfied Farmer</span>
             </div>
           </div>
         </section>
