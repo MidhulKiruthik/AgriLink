@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import axios from "axios";
 import Layout from "../components/Layout";
 
@@ -42,12 +41,7 @@ export default function Home() {
           <span>Fresh from local farms • Secure payments • Fast delivery</span>
         </div>
 
-        <motion.section
-          className="hero"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-        >
+        <section className="hero">
           <div className="hero-overlay" />
           <h1><span className="brand">AgriLink</span></h1>
           <p className="hero-sub">Your trusted marketplace for fresh & organic produce.</p>
@@ -56,7 +50,7 @@ export default function Home() {
             <button
               type="button"
               onClick={handleShopNow}
-              className="shop-now-btn transition-transform duration-200 hover:scale-105 active:scale-95"
+              className="shop-now-btn px-6 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 active:scale-95 transition-all duration-300"
             >
               Shop Now
             </button>
@@ -67,47 +61,41 @@ export default function Home() {
               <span>✓ Local sellers</span>
             </div>
           </section>
-        </motion.section>
+        </section>
 
         <section className="categories">
           <h3 className="section-subtitle">Browse by Category</h3>
           <div className="chip-row">
             {["Fruits", "Vegetables", "Leafy Greens", "Cereals", "Dairy"].map((c) => (
-              <button key={c} type="button" className="chip" onClick={() => router.push("/products")}>
+              <button
+                key={c}
+                type="button"
+                className="chip"
+                onClick={() => router.push("/products")}
+              >
                 {c}
               </button>
             ))}
           </div>
         </section>
 
-        <motion.section
-          className="farmers"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-        >
+        <section className="farmers">
           <h2>Become a Seller</h2>
           <p>Join AgriLink and start selling your fresh, organic produce to a wide audience.</p>
-          <motion.button
+          <button
             type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="px-6 py-3 bg-amber-600 text-white font-semibold rounded-full shadow-md hover:bg-amber-700 active:scale-95 transition-all duration-300"
             onClick={() => router.push("/farmer-dashboard")}
           >
             Become a Seller
-          </motion.button>
-        </motion.section>
+          </button>
+        </section>
 
-        <motion.section
-          className="testimonials"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1.5 }}
-        >
+        <section className="testimonials">
           <h2>What Our Customers Say</h2>
           <div className="testimonial-cards">
             <div className="testimonial-card">
-              <p>"Great platform! The produce is always fresh and delivered on time."</p>
+              <p>"Best platform! The produce is always fresh and delivered on time."</p>
               <span>- Happy Customer</span>
             </div>
             <div className="testimonial-card">
@@ -115,7 +103,7 @@ export default function Home() {
               <span>- Satisfied Farmer</span>
             </div>
           </div>
-        </motion.section>
+        </section>
       </div>
     </Layout>
   );
